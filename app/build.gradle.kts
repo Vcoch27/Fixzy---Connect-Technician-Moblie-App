@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.constraintlayout.compose)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
@@ -58,4 +59,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.exposed.core)
+    implementation ("androidx.cardview:cardview:1.0.0")
+    implementation("com.google.android.material:material:1.2.1")
+
 }

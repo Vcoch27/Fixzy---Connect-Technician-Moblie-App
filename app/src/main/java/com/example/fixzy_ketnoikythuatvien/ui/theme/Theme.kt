@@ -9,50 +9,40 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
-
+//bao bọc các thành phần giao diện trong ứng  Jetpack Compose (framework của google)
 @Composable
-fun FixzyKetNoiKyThuatVienTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+fun AppTheme(
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    CompositionLocalProvider(
+        //cung cấp giá trị cục bộ cho toàn bộ thành phần con trong giao diện
+        //gán extendedColors vaào biến LocalAppColors
+        //thành phần còn có thể sử dụng màu sắc từ extendedColors mà không cần truyền tham số
+        LocalAppColors provides extendedColors,
+        LocalAppTypography provides extendedTypography
+    ) {
+        MaterialTheme(
+//        áp dụng Material Design 3 cho giao diện
+            //định nghĩa kiểu chữ
+            typography = Typography,
+            //hiển thị giao diện con được truyển vào
+            content = content
+        )
     }
+}
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+//singleton object (đối tượng duy nhất trong toaàn bộ ứng dụng)
+//cung cấp một cách dễ dàng truy cấp màu sắc của theme
+object AppTheme {
+    //truy cập màu sắc hiện tại của ứng dụng
+    val colors: AppColors
+        @Composable
+        get() = LocalAppColors.current
+    val typography: AppTypography
+        @Composable
+        get() = LocalAppTypography.current
 }
