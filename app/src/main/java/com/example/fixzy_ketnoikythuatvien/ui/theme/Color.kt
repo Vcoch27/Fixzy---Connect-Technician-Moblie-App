@@ -4,14 +4,16 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-val Pink = Color (0xFFF28482)
-val Green = Color( 0xFF84A59D)
-val Yellow = Color ( 0xFFF7EDE2)
-val YellowLight = Color( 0xFFFFFFF2)
-val Dark = Color( 0xFF3D405B)
+
+val Pink = Color(0xFFF28482)
+val Green = Color(0xFF84A59D)
+val Yellow = Color(0xFFF7EDE2)
+val YellowLight = Color(0xFFFFFFF2)
+val Dark = Color(0xFF3D405B)
+
 @Immutable
 data class AppColors(
-     val background: Color,
+    val background: Color,
     val onBackground: Color,
     val surface: Color,
     val onSurface: Color,
@@ -19,10 +21,10 @@ data class AppColors(
     val onSecondarySurface: Color,
     val regularSurface: Color,
     val onRegularSurface: Color,
-    val actionSurface:Color,
-    val onActionSurface:Color,
+    val actionSurface: Color,
+    val onActionSurface: Color,
     val highlightSurface: Color,
-    val onHighlightSurface: Color,
+    val onHighlightSurface: Color
 )
 
 val LocalAppColors = staticCompositionLocalOf {
@@ -38,11 +40,12 @@ val LocalAppColors = staticCompositionLocalOf {
         actionSurface = Color.Unspecified,
         onActionSurface = Color.Unspecified,
         highlightSurface = Color.Unspecified,
-        onHighlightSurface = Color.Unspecified,
+        onHighlightSurface = Color.Unspecified
     )
 }
-val extendedColors = AppColors(
-    background = Color. White,
+
+val extendedColor = AppColors(
+    background = Color.White,
     onBackground = Dark,
     surface = Color.White,
     onSurface = Dark,
@@ -53,5 +56,5 @@ val extendedColors = AppColors(
     actionSurface = Yellow,
     onActionSurface = Pink,
     highlightSurface = Green,
-    onHighlightSurface = Color.White,
+    onHighlightSurface = Color.White
 )

@@ -14,19 +14,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.fixzy_ketnoikythuatvien.R
+import com.example.fixzy_ketnoikythuatvien.data.model.ProductPreviewState
+import com.example.fixzy_ketnoikythuatvien.ui.screen.ProductHighlights
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 
 @Composable
 fun ProductPreviewSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    state: ProductPreviewState
 ) {
-    Box(modifier = modifier.height(IntrinsicSize.Max)
+    Box(
+        modifier = modifier.height(IntrinsicSize.Max),
     ) {
         ProductBackground(
             modifier = Modifier.padding(bottom = 70.dp)
         )
         Content(
-            modifier = Modifier.statusBarsPadding() // Thêm khoảng cách bằng kích thước của status để tránh bị che khuất bởi thanh trạng thái
+            modifier = Modifier.statusBarsPadding(), // Thêm khoảng cách bằng kích thước của status để tránh bị che khuất bởi thanh trạng thái
+            state = state
         )
     }
 }
@@ -34,12 +39,13 @@ fun ProductPreviewSection(
 @Composable
 private fun ProductBackground(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.fillMaxSize()//lấp đầy toàn bộ không gian của parent container
+        modifier = modifier
+            .fillMaxSize()//lấp đầy toàn bộ không gian của parent container
             .background(
                 color = AppTheme.colors.secondarySurface, //
                 shape = RoundedCornerShape( //bo góc cho box
-                            bottomEnd = 32.dp,
-                            bottomStart =32.dp
+                    bottomEnd = 32.dp,
+                    bottomStart = 32.dp
                 )
 
             )
@@ -47,15 +53,19 @@ private fun ProductBackground(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Content(modifier: Modifier = Modifier) {
+private fun Content(
+    modifier: Modifier = Modifier,
+    state: ProductPreviewState
+) {
+
     Box(
-        modifier = modifier.fillMaxWidth() // Đảm bảo các layout có độ rộng tối đa
+        modifier = modifier.fillMaxWidth(), // Đảm bảo các layout có độ rộng tối đa
     ) {
         // Hiển thị ActionBar
         ActionBar(
             headline = "Hikigaeru",
             modifier = Modifier
-                .padding(horizontal = 25.dp,vertical =15.dp)
+                .padding(horizontal = 25.dp, vertical = 15.dp)
                 .align(Alignment.TopCenter) // Căn chỉnh ActionBar ở trên, giữa
 
         )
@@ -64,9 +74,14 @@ private fun Content(modifier: Modifier = Modifier) {
             contentDescription = null,
             contentScale = ContentScale.FillHeight, // Căn chỉnh hình ảnh theo chiều cao mà không bị méo
             modifier = Modifier
-                .height(250.dp)
-                .padding(start = 140.dp, top = 20.dp,)
-                .padding(vertical =20.dp)
+                .height(260.dp)
+                .padding(start = 160.dp, top = 10.dp)
+                .padding(vertical = 30.dp)
+        )
+        ProductHighlights(
+            highlights = state.highlights,
+            modifier = Modifier.offset(y = 65.dp)
+                .padding(start = 20.dp)
         )
     }
 }

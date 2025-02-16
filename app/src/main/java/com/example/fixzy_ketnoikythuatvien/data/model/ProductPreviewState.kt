@@ -17,7 +17,7 @@ enum class ProductHighlightType{
 }
 
 //Mô tả sản phầm trong phần xem trước
-data class  ProductDetailsState(
+data class  ProductPreviewState(
     val healine: String = "Mr.Coc",
     @DrawableRes val productImg: Int = R.drawable.coc,
     val highlights: List <ProductHighlightState> = listOf(

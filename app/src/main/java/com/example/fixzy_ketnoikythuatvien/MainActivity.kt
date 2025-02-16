@@ -1,4 +1,5 @@
 package com.example.fixzy_ketnoikythuatvien
+
 import androidx.compose.runtime.Composable
 import android.app.Activity
 import android.os.Bundle
@@ -18,38 +19,56 @@ import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import kotlin.math.abs
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import com.example.fixzy_ketnoikythuatvien.ui.components.ProductPreviewSection
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.fixzy_ketnoikythuatvien.data.model.OrderState
+
 import com.example.fixzy_ketnoikythuatvien.ui.screen.ProductDetailsScreen
+
+
+private const val PRODUCT_PRICE_PER_UNIT = 5.25
+private const val PRODUCT_CURRENCY = "$"
 
 // Lớp MainActivity kế thừa từ Activity, chịu trách nhiệm quản lý giao diện chính
 class MainActivity : ComponentActivity() {
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Đảm bảo thiết lập chế độ edge-to-edge nếu cần thiết
+        enableEdgeToEdge()
+        // Thiết lập giao diện với AppTheme và màn hình ProductDetailsScreen
+        setContent {
+            AppTheme { //Ứng dụng AppTheme cho giao diện
+                //khai báo một biến amount vơ trạng thái mặc định là 5
+                var amount by remember { mutableStateOf(5) }
+                //Tính toaán tổng giá trị sản phầm  với sự theo dõi khi giá trị amount thay đổi (sử dụng derivedStateOf )
+                val totalPrice by remember { derivedStateOf { amount * PRODUCT_PRICE_PER_UNIT } }
+                // Gọi màn hình ProductDetailsScreen và truyền các sự kiện
+                ProductDetailsScreen(
+                    //sự kiện theem sản phầm vào giỏ hàng
+                    onAddItemClicked = { amount = amount.inc() },//tăng số lượng sản phầm
+                    onRemoveItemClicked = { if (amount > 0) amount = amount.dec() }, //giảm số lượng nếu nhỏ hơn 0
+                    onCheckOutClicked = {},
+                    //trạng thái đơn hàng được truyền vào, bao gồm số lượng sảng phẩm và tổng giá trị
+                    orderState = OrderState(
+                        amount = amount,
+                        totalPrice = "$PRODUCT_CURRENCY${String.format("%.2f", totalPrice)}"
+                    )
+                )
+            }
+        }
+    }
+
 //
 //    // Các biến lateinit được khai báo cho ViewPager2, Handler, danh sách ảnh và adapter
 //    private lateinit var viewPager2: ViewPager2
 //    private lateinit var handler: Handler
 //    private lateinit var imageList: ArrayList<Int>
 //    private lateinit var adapter: ImageAdapter
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Đảm bảo thiết lập chế độ edge-to-edge nếu cần thiết
-        enableEdgeToEdge()
-        // Thiết lập giao diện với AppTheme và màn hình ProductDetailsScreen
-        setContent {
-            AppTheme {
-                // Gọi màn hình ProductDetailsScreen và truyền các sự kiện
-                ProductDetailsScreen(
-
-                )
-            }
-        }
-    }
-
 
     // Phương thức onCreate được gọi khi Activity được tạo
 //    override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,7 +95,6 @@ class MainActivity : ComponentActivity() {
 //            }
 //        })
 //    }
-
 
 
 //    // Khi Activity tạm dừng, xóa các runnable để ngừng việc tự động chuyển trang
