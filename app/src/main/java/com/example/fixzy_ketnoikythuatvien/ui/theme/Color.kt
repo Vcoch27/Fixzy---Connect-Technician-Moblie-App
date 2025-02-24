@@ -13,8 +13,10 @@ val Dark = Color(0xFF3D405B)
 
 @Immutable
 data class AppColors(
+    val mainColor: Color,
     val background: Color,
     val onBackground: Color,
+    val onBackgroundVariant: Color,
     val surface: Color,
     val onSurface: Color,
     val secondarySurface: Color,
@@ -29,8 +31,10 @@ data class AppColors(
 
 val LocalAppColors = staticCompositionLocalOf {
     AppColors(
+        mainColor = Color.Unspecified,
         background = Color.Unspecified,
         onBackground = Color.Unspecified,
+        onBackgroundVariant= Color.Unspecified,
         surface = Color.Unspecified,
         onSurface = Color.Unspecified,
         secondarySurface = Color.Unspecified,
@@ -40,13 +44,16 @@ val LocalAppColors = staticCompositionLocalOf {
         actionSurface = Color.Unspecified,
         onActionSurface = Color.Unspecified,
         highlightSurface = Color.Unspecified,
-        onHighlightSurface = Color.Unspecified
+        onHighlightSurface = Color.Unspecified,
+
     )
 }
 
 val extendedColor = AppColors(
+    mainColor = Color(0xFF026E9B),
     background = Color.White,
     onBackground = Dark,
+    onBackgroundVariant = Color(0xFF4C7C6C),
     surface = Color.White,
     onSurface = Dark,
     secondarySurface = Pink,

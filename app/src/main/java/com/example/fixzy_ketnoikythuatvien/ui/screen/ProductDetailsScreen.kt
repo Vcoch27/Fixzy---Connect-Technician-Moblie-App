@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderData
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderState
 import com.example.fixzy_ketnoikythuatvien.data.model.ProductDescriptionData
@@ -40,8 +41,8 @@ fun ProductDetailsScreen(
     //() -> Unit: hàm không có tham số và không trả về giá trị (tương đương với hàm void trong Java)
     onAddItemClicked: () -> Unit = {},
     onRemoveItemClicked: () -> Unit = {},
-    onCheckOutClicked: () -> Unit = {}
-
+    onCheckOutClicked: () -> Unit = {},
+    navController: NavController
 ) {
     //vì box không cuộn đượ, nhưng trong Content() bên trong nó chưa Column có thể cuộn, mà ActionBar thì cố dịnh ở cuối Box -> hiệuuuwngs ssticky
     Box(
@@ -63,7 +64,9 @@ fun ProductDetailsScreen(
             onCheckOutClick = onCheckOutClicked,
             modifier = Modifier
                 .navigationBarsPadding() //padding tránh điều hướng
-                .padding(horizontal = 18.dp, vertical = 8.dp)
+                .padding(horizontal = 18.dp, vertical = 8.dp),
+            navController = navController
+
         )
     }
 }

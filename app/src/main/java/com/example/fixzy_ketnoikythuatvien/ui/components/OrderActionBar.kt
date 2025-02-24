@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderData
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderState
@@ -35,7 +37,9 @@ fun OrderActionBar(
     state: OrderState = OrderData,
     onAddItemClick: () -> Unit,
     onRemoveItemClick: () -> Unit,
-    onCheckOutClick: () -> Unit
+    onCheckOutClick: () -> Unit,
+    navController: NavController
+
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -50,6 +54,11 @@ fun OrderActionBar(
                 .height(76.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            Button(
+                onClick = { navController.navigate("home_page") }
+            ) {
+                Text("Click Me")
+            }
             // Hiển thị Selector chiếm 50% chiều rộng của Row
             Selector(
                 amount = state.amount,

@@ -62,5 +62,9 @@ dependencies {
     implementation(libs.exposed.core)
     implementation ("androidx.cardview:cardview:1.0.0")
     implementation("com.google.android.material:material:1.2.1")
-
+    implementation("androidx.navigation:navigation-compose:2.7.3")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("androidx.compose.material:material:1.8.0-beta01")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 }
