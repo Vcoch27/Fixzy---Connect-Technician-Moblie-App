@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "417602227592",
+    "project_id": "fixzy-knktv",
+    "storage_bucket": "fixzy-knktv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417602227592:android:78758c6f4e69529ef73e3d",
+        "android_client_info": {
+          "package_name": "com.example.fixzy_ketnoikythuatvien"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIwiaaqUZOyVmnSlNhNGvTK1HBDtEGmds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

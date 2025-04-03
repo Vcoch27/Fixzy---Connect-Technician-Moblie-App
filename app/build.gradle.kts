@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
+    id ("kotlin-kapt")
 }
 
 android {
@@ -40,7 +42,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -52,6 +53,8 @@ dependencies {
     implementation(libs.constraintlayout.compose)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,4 +70,14 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.compose.material:material:1.8.0-beta01")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation ("androidx.compose.foundation:foundation:1.7.8")
+    implementation ("androidx.compose.ui:ui:1.7.8")
+    implementation ("com.google.accompanist:accompanist-flowlayout:0.30.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 }

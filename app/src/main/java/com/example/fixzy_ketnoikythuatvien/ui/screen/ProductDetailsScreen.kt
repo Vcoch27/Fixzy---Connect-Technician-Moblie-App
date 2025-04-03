@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderData
+import com.example.fixzy_ketnoikythuatvien.data.model.OrderData2
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderState
 import com.example.fixzy_ketnoikythuatvien.data.model.ProductDescriptionData
 import com.example.fixzy_ketnoikythuatvien.data.model.ProductFlavorData
@@ -37,7 +38,7 @@ fun ProductDetailsScreen(
     productFlavors: List<ProductFlavorState> = ProductFlavorData,
     productNutritionState: ProductNutritionState = ProductNutritionData,
     productDescription: String = ProductDescriptionData,
-    orderState: OrderState = OrderData,
+    orderState: OrderState = OrderData2,
     //() -> Unit: hàm không có tham số và không trả về giá trị (tương đương với hàm void trong Java)
     onAddItemClicked: () -> Unit = {},
     onRemoveItemClicked: () -> Unit = {},

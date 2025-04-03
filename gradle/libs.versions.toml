@@ -13,6 +13,8 @@ composeBom = "2024.04.01"
 playServicesMaps = "19.0.0"
 constraintlayout = "2.2.0"
 compose-constraint-layout = "1.0.1"
+firebaseDatabaseKtx = "21.0.0"
+firebaseAuth = "23.2.0"
 
 
 [libraries]
@@ -35,6 +37,8 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "compose-constraint-layout" }
+firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

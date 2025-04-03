@@ -28,13 +28,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderData
+import com.example.fixzy_ketnoikythuatvien.data.model.OrderData2
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderState
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 
 @Composable
 fun OrderActionBar(
     modifier: Modifier = Modifier,
-    state: OrderState = OrderData,
+    state: OrderState = OrderData2,
     onAddItemClick: () -> Unit,
     onRemoveItemClick: () -> Unit,
     onCheckOutClick: () -> Unit,
