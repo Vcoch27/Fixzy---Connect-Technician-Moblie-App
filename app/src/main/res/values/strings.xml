@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name" translatable="false">Fixzy - Ket noi ky thuat vien</string>
+    <string name="error_user_not_found">User not found</string>
+    <string name="error_invalid_credentials">Invalid credentials</string>
+    <string name="error_auth_general">Authentication error</string>
+    <string name="error_unexpected">An unexpected error occurred</string>
+
+    <!-- Add the new error strings here -->
+    <string name="error_account_exists">Account already exists</string>
+    <string name="error_weak_password">Password is too weak</string>
+    <string name="error_invalid_email">Invalid email address</string>
 </resources>

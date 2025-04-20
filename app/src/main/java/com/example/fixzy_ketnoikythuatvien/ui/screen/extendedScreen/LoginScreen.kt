@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "UNUSED_EXPRESSION")
 
 package com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen
 
@@ -55,11 +55,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fixzy_ketnoikythuatvien.R
-import com.example.fixzy_ketnoikythuatvien.data.local.UserPreferences
-import com.example.fixzy_ketnoikythuatvien.data.repository.AuthRepositoryImpl
+import com.example.fixzy_ketnoikythuatvien.service.AuthService
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.AuthUiState
-import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,23 +67,14 @@ fun LoginScreen(
     onSignUpClick: () -> Unit,
     onForgotPasswordClick: () -> Unit
 ) {
-
-    val viewModel = remember {
-        AuthViewModel(
-            repository = AuthRepositoryImpl(context),
-            userPreferences = UserPreferences(context)
-        )
-    }
-    val uiState by viewModel.uiState.collectAsState()
-    LaunchedEffect (uiState) {
-        if (uiState is AuthUiState.Success) {
-            onNavigateToHome()
-        }
-    }
-
+    val authService = remember { AuthService() }
+    val TAG = "LOGIN_SCREEN"
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+
+    Log.d(TAG, "LoginScreen composed")
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -190,38 +179,45 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Nút Login → Gọi ViewModel.login()
                     Button(
-                        onClick = { viewModel.login(email, password) },
+                        onClick = {
+                            Log.d(TAG, "Login button clicked")
+                            Log.d(TAG, "Input data - Email: $email, Password: $password")
+                            when {
+                                email.isEmpty() -> {
+                                    Log.w(TAG, "Validation failed: Email is empty")
+                                    showToast(context, "Email cannot be empty")
+                                }
+                                password.length < 6 -> {
+                                    Log.w(TAG, "Validation failed: Password is less than 6 characters")
+                                    showToast(context, "Password must be at least 6 characters")
+                                }
+                                else -> {
+                                    Log.i(TAG, "Validation passed, calling authService.login")
+                                    authService.login(
+                                        email = email,
+                                        password = password,
+                                        onSuccess = {
+                                            Log.i(TAG, "Login successful, navigating to home")
+                                            showToast(context, "Login successful")
+                                            onNavigateToHome()
+                                        },
+                                        onError = { error ->
+                                            Log.e(TAG, "Login failed: $error")
+                                            showToast(context, error)
+                                        }
+                                    )
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState !is AuthUiState.Loading,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = AppTheme.colors.mainColor,
                             contentColor = Color.White
                         )
                     ) {
-                        if (uiState is AuthUiState.Loading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                            Log.e("LOGIN_CHECK", "DONE 1")
-
-                        } else {
-                            Text(text = "Login")
-                        }
+                        Text("Login", color = Color.White)
                     }
-
-                    // Hiển thị lỗi nếu có
-                    if (uiState is AuthUiState.Error) {
-                        Text(
-                            text = (uiState as AuthUiState.Error).message,
-                            color = Color.Red,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
-
 
                     Spacer(modifier = Modifier.height(16.dp))
 

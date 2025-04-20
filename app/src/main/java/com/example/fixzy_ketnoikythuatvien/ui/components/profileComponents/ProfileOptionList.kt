@@ -27,11 +27,18 @@ fun ProfileOptionList(onLogout: () -> Unit) {
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
-            ProfileOptionItem(option, onOptionClick = {
-                if (option.title == "Logout") {
-                    onLogout()
+            ProfileOptionItem(
+                option = option,
+                onOptionClick = {
+                    when (option.title) {
+                        "Logout" -> onLogout()
+                        "Edit Profile" -> { /* Handle edit profile */ }
+                        "Notification" -> { /* Handle notification */ }
+                        "Payment method" -> { /* Handle payment */ }
+                        "Help & support" -> { /* Handle help */ }
+                    }
                 }
-            })
+            )
             Spacer(modifier = Modifier.height(1.dp))
         }
     }

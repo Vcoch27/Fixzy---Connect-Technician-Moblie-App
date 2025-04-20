@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Checkbox
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -46,66 +47,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fixzy_ketnoikythuatvien.data.local.UserPreferences
-import com.example.fixzy_ketnoikythuatvien.data.repository.AuthRepositoryImpl
+import com.example.fixzy_ketnoikythuatvien.service.AuthService
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
-import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.AuthUiState
-import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.AuthViewModel
-//import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.UserApiViewModel
-import com.google.firebase.auth.FirebaseAuth
-
+// ui/screen/extendedScreen/AuthScreen.kt
 @Composable
 fun SignUpScreen(
-    context: Context = LocalContext.current,  //nguwx cảnh hiện tại
-    onNavigateToHome: () -> Unit,  //callback trở lại màn hình chính
-    onBackToLogin: () -> Unit      //callback la màn hình đăng nhập
+    context: Context = LocalContext.current,
+    onBackToLogin: () -> Unit,
+    onNavigateToHome: () -> Unit,
 ) {
-//    viewmodel xử lí logic API đồng bộ dữ liệu
-//    val userApiViewModel = viewModel<UserApiViewModel>()
-
-//view model quản lí trạng thái giao diện và logic xác thức
-    val viewModel = remember {
-        AuthViewModel(
-            repository = AuthRepositoryImpl(context),  // thực hiện các thao tác backend như gửi dữ liệu lên từ server
-            userPreferences = UserPreferences(context)  // Lưu thông tin người dùng vào bộ nhớ cục bộ
-        )
-    }
-    val uiState by viewModel.uiState.collectAsState()  // quan sát tranng thái giao diện để xử lí kết quả đăng kí
-
-   //các trạng thái
+    val authService = remember { AuthService() }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var isChecked by remember { mutableStateOf(false) } // Checkbox trạng thái
+    var isChecked by remember { mutableStateOf(false) }
+    val TAG = "SIGNUP_SCREEN" // Thêm TAG để dễ nhận diện log
 
-    //theo dõi giao diện và thực hiện đồng bộsau khi đăng kí thành công
-//    LaunchedEffect(uiState) {
-//        if (uiState is AuthUiState.Success) {
-//            val currentUser = FirebaseAuth.getInstance().currentUser  // Lấy người dùng hiện tại từ Firebase
-//            Log.d("SIGNUP_SCREEN", "🔥 Firebase user: $currentUser")
-//            currentUser?.let {
-//                Log.d("SIGNUP_SCREEN", "✅ Syncing to API: ${it.uid}")
-//                userApiViewModel.syncUserInfo(  //đồng bộ dữ lệu với backend thông qua api
-//                    it.uid,
-//                    it.email ?: "",
-//                    fullName = name,
-//                    phone = null
-//                )
-//            }
-//            onNavigateToHome() // Chuyển hướng sang màn hình chính
-//        }
-//    }
+    Log.d(TAG, "SignUpScreen composed") // Log khi màn hình được hiển thị
 
-    // Phần giao diện hiển thị giao diện đăng ký
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -116,9 +83,7 @@ fun SignUpScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(80.dp))
-
             Text("Sign Up", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
-
             Spacer(modifier = Modifier.height(60.dp))
 
             Box(
@@ -129,7 +94,6 @@ fun SignUpScreen(
                     .padding(24.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Các trường nhập liệu cho thông tin đăng ký
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
@@ -138,7 +102,6 @@ fun SignUpScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = textFieldColors()
                     )
-
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
@@ -149,10 +112,18 @@ fun SignUpScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = textFieldColors()
                     )
-
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Mật khẩu với tính năng hiển thị/ẩn
+                    OutlinedTextField(
+                        value = phone,
+                        onValueChange = { phone = it },
+                        label = { Text("Phone (optional)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors()
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -170,7 +141,6 @@ fun SignUpScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = textFieldColors()
                     )
-
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
@@ -182,51 +152,77 @@ fun SignUpScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = textFieldColors()
                     )
-
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Checkbox xác nhận điều khoản
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = isChecked, onCheckedChange = { isChecked = it })
                         Text(text = "I agree to the ")
-                        ClickableText(text = AnnotatedString("Terms of Service"), onClick = { /* Mở điều khoản dịch vụ */ })
+                        ClickableText(text = AnnotatedString("Terms of Service"), onClick = { /* TODO */ })
                         Text(text = " and ")
-                        ClickableText(text = AnnotatedString("Privacy Policy"), onClick = { /* Mở chính sách bảo mật */ })
+                        ClickableText(text = AnnotatedString("Privacy Policy"), onClick = { /* TODO */ })
                     }
-
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Xử lý đăng ký khi nhấn nút "Create Account"
                     Button(
                         onClick = {
+                            Log.d(TAG, "Create Account button clicked") // Log khi nhấn nút
+                            Log.d(TAG, "Input data - Name: $name, Email: $email, Phone: $phone, Password: $password, ConfirmPassword: $confirmPassword, IsChecked: $isChecked") // Log dữ liệu đầu vào
                             when {
-                                name.isEmpty() -> showToast(context, "Name cannot be empty")
-                                email.isEmpty() -> showToast(context, "Email cannot be empty")
-                                password.length < 6 -> showToast(context, "Password must be at least 6 characters")
-                                password != confirmPassword -> showToast(context, "Passwords do not match")
-                                !isChecked -> showToast(context, "Please accept the Terms of Service")
-                                else -> viewModel.register(email, password) // Gọi ViewModel để đăng ký
+                                name.isEmpty() -> {
+                                    Log.w(TAG, "Validation failed: Name is empty") // Log khi validate thất bại
+                                    showToast(context, "Name cannot be empty")
+                                }
+                                email.isEmpty() -> {
+                                    Log.w(TAG, "Validation failed: Email is empty") // Log khi validate thất bại
+                                    showToast(context, "Email cannot be empty")
+                                }
+                                password.length < 6 -> {
+                                    Log.w(TAG, "Validation failed: Password is less than 6 characters") // Log khi validate thất bại
+                                    showToast(context, "Password must be at least 6 characters")
+                                }
+                                password != confirmPassword -> {
+                                    Log.w(TAG, "Validation failed: Passwords do not match") // Log khi validate thất bại
+                                    showToast(context, "Passwords do not match")
+                                }
+                                !isChecked -> {
+                                    Log.w(TAG, "Validation failed: Terms of Service not accepted") // Log khi validate thất bại
+                                    showToast(context, "Please accept the Terms of Service")
+                                }
+                                else -> {
+                                    Log.i(TAG, "Validation passed, calling authService.signUp") // Log khi validate thành công
+                                    authService.signUp(
+                                        email = email,
+                                        password = password,
+                                        name = name,
+                                        phone = phone,
+                                        onSuccess = {
+                                            Log.i(TAG, "Sign up successful, navigating to home") // Log khi đăng ký thành công
+                                            showToast(context, "Sign up successful")
+                                            onNavigateToHome()
+                                        },
+                                        onError = { error ->
+                                            Log.e(TAG, "Sign up failed: $error") // Log khi đăng ký thất bại
+                                            showToast(context, error)
+                                        }
+                                    )
+                                }
                             }
                         },
-                        enabled = isChecked,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colors.mainColor)
                     ) {
                         Text("Create Account", color = Color.White)
                     }
 
-                    // Hiển thị lỗi khi có vấn đề xảy ra
-                    if (uiState is AuthUiState.Error) {
-                        Text((uiState as AuthUiState.Error).message, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
-                    }
-
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Chuyển hướng đến trang đăng nhập
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Do you have an account?")
                         Spacer(modifier = Modifier.width(4.dp))
-                        TextButton(onClick = onBackToLogin, contentPadding = PaddingValues(0.dp)) {
+                        TextButton(onClick = {
+                            Log.d(TAG, "Login button clicked, navigating to login") // Log khi nhấn nút Login
+                            onBackToLogin()
+                        }, contentPadding = PaddingValues(0.dp)) {
                             Text("Login", color = AppTheme.colors.mainColor)
                         }
                     }
@@ -236,11 +232,12 @@ fun SignUpScreen(
     }
 }
 
-// Hàm hiển thị Toast khi có lỗi
+
 fun showToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun textFieldColors() = TextFieldDefaults.outlinedTextFieldColors(
     focusedBorderColor = AppTheme.colors.mainColor,

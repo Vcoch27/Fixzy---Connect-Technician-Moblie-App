@@ -5,7 +5,6 @@ plugins {
     id("com.google.gms.google-services")
     id ("kotlin-kapt")
 }
-
 android {
     namespace = "com.example.fixzy_ketnoikythuatvien"
     compileSdk = 35
@@ -21,7 +20,13 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            //wifi
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.9:3000/\"")
+//            buildConfigField("String", "BASE_URL", "\"http://10.23.13.51:3000/\"")
+        }
+        getByName("release") {
+            buildConfigField("String", "BASE_URL", "\"https://192.168.1.10:3000/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -29,17 +34,22 @@ android {
             )
         }
     }
+
+    buildFeatures {
+        buildConfig = true  // Đảm bảo tính năng BuildConfig được bật
+        compose = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
-    buildFeatures {
-        compose = true
-    }
 }
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -55,6 +65,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -80,4 +91,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+
+    implementation ("org.reduxkotlin:redux-kotlin-threadsafe:0.5.5")
+
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }

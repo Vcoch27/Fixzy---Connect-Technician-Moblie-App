@@ -1,6 +1,6 @@
 package com.example.fixzy_ketnoikythuatvien.ui.screen
 
-import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,18 +14,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.fixzy_ketnoikythuatvien.ui.components.profileComponents.ProfileHeader
 import com.example.fixzy_ketnoikythuatvien.ui.components.profileComponents.ProfileOptionList
 import com.example.fixzy_ketnoikythuatvien.ui.components.publicComponents.TopBar
-import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.AuthViewModel
-import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.AuthViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(
+    navController: NavController,
+    onLogout: () -> Unit,
+) {
+    val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
-    val viewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(context))
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -50,12 +51,13 @@ fun ProfileScreen(navController: NavController) {
             ) {
                 ProfileHeader()
                 Spacer(modifier = Modifier.height(16.dp))
-                ProfileOptionList(onLogout = {
-                    viewModel.logout()
-                    navController.navigate("login_screen") {
-                        popUpTo("profile_screen") { inclusive = true }
+                ProfileOptionList(
+                    onLogout = {
+                        auth.signOut()
+                        onLogout()
+                        Toast.makeText(context,"Logged out successfully", Toast.LENGTH_SHORT).show()
                     }
-                })
+                )
             }
 
         }
