@@ -2,7 +2,6 @@
 package com.example.fixzy_ketnoikythuatvien.service
 
 import android.util.Log
-import com.example.fixzy_ketnoikythuatvien.BuildConfig
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
@@ -12,8 +11,6 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.ResponseBody
 
 class AuthService {
@@ -109,7 +106,7 @@ class AuthService {
     fun login(
         email: String,
         password: String,
-        onSuccess: () -> Unit,
+        onSuccess: (UserData) -> Unit,
         onError: (String) -> Unit
     ) {
         Log.i(TAG, "Starting login with email: $email")
@@ -127,7 +124,7 @@ class AuthService {
                                 Log.i(TAG, "ID Token retrieved: $idToken")
                                 if (idToken != null) {
                                     // Gửi ID Token đến backend để xác minh
-                                    authenticateWithBackend(idToken, user.uid, email, onSuccess, onError)
+                                    authenticateWithBackend(idToken, onSuccess, onError)
                                 } else {
                                     Log.e(TAG, "ID Token is null")
                                     onError("Failed to retrieve ID Token")
@@ -148,11 +145,9 @@ class AuthService {
             }
     }
     // Gửi ID Token đến backend để xác minh
-    private fun authenticateWithBackend(
+    fun authenticateWithBackend(
         idToken: String,
-        uid: String,
-        email: String,
-        onSuccess: () -> Unit,
+        onSuccess: (UserData) -> Unit,
         onError: (String) -> Unit
     ) {
         Log.i(TAG, "Authenticating with backend using ID Token")
@@ -164,7 +159,13 @@ class AuthService {
                     if (userData != null) {
                         Log.i(TAG, "User data from backend: $userData")
                         // Đồng bộ với backend (gọi /sync-user)
-                        syncUserWithBackend(userData, onSuccess, onError)
+                        syncUserWithBackend(
+                            userData,
+                            onSuccess = {
+                                onSuccess(userData) // ✅ Truyền lại UserData sau khi đồng bộ
+                            },
+                            onError = onError
+                        )
                     } else {
                         Log.e(TAG, "User data from backend is null")
                         onError("Failed to retrieve user data from backend")

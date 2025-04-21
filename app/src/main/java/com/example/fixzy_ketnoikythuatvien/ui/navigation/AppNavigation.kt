@@ -31,17 +31,14 @@
     import com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen.LoginScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen.SignUpScreen
     import com.example.fixzy_ketnoikythuatvien.ui.viewmodel.TestViewModel
-
     @Composable
     fun AppNavigation(modifier: Modifier = Modifier) {
-
         val navController = rememberNavController()
         val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
         Scaffold(
             bottomBar = {
-                val hideBottomBarRoutes =
-                    listOf("chat_screen/{userName}", "login_screen", "signup_screen", "splash_screen")
+                val hideBottomBarRoutes = listOf("chat_screen/{userName}", "login_screen", "signup_screen", "splash_screen")
                 if (currentRoute !in hideBottomBarRoutes) {
                     BottomNavigationBar(navController)
                 }
@@ -53,66 +50,81 @@
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable("splash_screen") {
-                    SplashScreen(navController)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        SplashScreen(navController)
+                    }
                 }
                 composable("signup_screen") {
-                    SignUpScreen(
-
-                        onBackToLogin = {
-                            navController.popBackStack()
-                        },
-                        onNavigateToHome = {navController.navigate("home_page")},
-
-                    )
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        SignUpScreen(
+                            onBackToLogin = { navController.popBackStack() },
+                            onNavigateToHome = { navController.navigate("home_page") }
+                        )
+                    }
                 }
                 composable("login_screen") {
-                    LoginScreen(
-                        onNavigateToHome = {navController.navigate("home_page")},
-                        onSignUpClick = { navController.navigate("signup_screen") },
-                        onForgotPasswordClick = { /* handle forgot */ }
-                    )
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        LoginScreen(
+                            onNavigateToHome = { navController.navigate("home_page") },
+                            onSignUpClick = { navController.navigate("signup_screen") },
+                            onForgotPasswordClick = { /* handle forgot */ }
+                        )
+                    }
                 }
                 composable("chat_page") {
-                    ChatScreen(navController)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        ChatScreen(navController)
+                    }
                 }
                 composable("chat_screen/{userName}") { backStackEntry ->
                     val userName = backStackEntry.arguments?.getString("userName") ?: ""
                     val chat = dummyChats.find { it.userName == userName }
 
-                    if (chat != null) {
-                        ExtendedChat(chat, navController)
-                    } else {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Chat not found", textAlign = TextAlign.Center, color = Color.Red)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        if (chat != null) {
+                            ExtendedChat(chat, navController)
+                        } else {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("Chat not found", textAlign = TextAlign.Center, color = Color.Red)
+                            }
                         }
                     }
                 }
                 composable("home_page") {
-                    ProductHomePageScreen(modifier = Modifier, navController = navController)
-                }
-                composable("home_page") {
-                    ProductHomePageScreen(modifier = Modifier, navController = navController)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        ProductHomePageScreen(modifier = Modifier, navController = navController)
+                    }
                 }
                 composable("all_categories") {
-                    AllCategoriesScreen(navController = navController)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        AllCategoriesScreen(navController = navController)
+                    }
                 }
                 composable("orders_page") {
-                    OrdersScreen(navController)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        OrdersScreen(navController)
+                    }
                 }
                 composable("notifications_page") {
-                    NotificationScreen(navController)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        NotificationScreen(navController)
+                    }
                 }
                 composable("profile_page") {
-                    ProfileScreen(navController,
-                        onLogout = {navController.navigate("login_screen")})
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        ProfileScreen(
+                            navController,
+                            onLogout = { navController.navigate("login_screen") }
+                        )
+                    }
                 }
                 composable("test_page") {
-
                     val viewModel: TestViewModel = viewModel()
                     Log.d("appnav", "tôi aaay")
 
-                    // Truyền ViewModel vào màn hình
-                    TestScreen(viewModel = viewModel)
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        TestScreen(viewModel = viewModel)
+                    }
                 }
             }
         }

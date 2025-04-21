@@ -1,11 +1,14 @@
 package com.example.fixzy_ketnoikythuatvien.redux.store
 
+import android.util.Log
 import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 import com.example.fixzy_ketnoikythuatvien.redux.reducer.Reducer.Companion.appReducer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.reduxkotlin.Store as ReduxStore
 import org.reduxkotlin.createStore
+
+private const val TAG = "Store"
 
 class Store {
     companion object {
@@ -17,8 +20,11 @@ class Store {
 
         // Store gốc để dispatch action
         val store: ReduxStore<AppState> = reduxStore.apply {
-            // Cập nhật StateFlow mỗi khi trạng thái thay đổi
-            subscribe { _stateFlow.value = getState() }
+            subscribe {
+                val newState = getState()
+                Log.d(TAG, "Trạng thái Redux thay đổi: số kỹ thuật viên=${newState.topTechnicians.size}, số danh mục=${newState.categories.size}, chi tiết kỹ thuật viên=${newState.topTechnicians.map { it.name }}")
+                _stateFlow.value = newState
+            }
         }
     }
 }

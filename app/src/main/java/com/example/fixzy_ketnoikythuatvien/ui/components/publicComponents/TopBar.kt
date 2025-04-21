@@ -32,14 +32,6 @@ fun TopBar(navController: NavController, title: String, modifier: Modifier = Mod
         modifier = modifier, // ✅ Dùng modifier từ bên ngoài
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { navController.popBackStack() }) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = AppTheme.colors.mainColor,
-                modifier = Modifier.size(30.dp)
-            )
-        }
 
         Box(
             Modifier

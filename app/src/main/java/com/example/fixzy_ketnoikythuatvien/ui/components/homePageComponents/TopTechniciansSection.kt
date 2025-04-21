@@ -1,5 +1,6 @@
 package com.example.fixzy_ketnoikythuatvien.ui.components.homePageComponents
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,18 +20,23 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.StarHalf
 import coil.compose.rememberImagePainter
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,34 +48,52 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.fixzy_ketnoikythuatvien.R
+import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
+import com.example.fixzy_ketnoikythuatvien.redux.store.Store
+import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
+import com.example.fixzy_ketnoikythuatvien.ui.screen.controller.CategoryController
+import com.example.fixzy_ketnoikythuatvien.ui.screen.controller.TopTechniciansController
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import com.example.fixzy_ketnoikythuatvien.ui.theme.LocalAppTypography
 
-data class Service(
-    val imageRes: Int,
-    val title: String,
-    val provider: String,
-    val price: String,
-    val rating: Double,
-    val reviews: Int
-)
-
-val serviceList = listOf(
-    Service(R.drawable.coc, "Electrical expert", "Ahmed Hassan", "200 EGP/Hour", 4.8, 839),
-    Service(R.drawable.coc, "Electrical expert", "Ahmed Hassan", "200 EGP/Hour", 4.8, 839)
-)
+private const val TAG = "TopTechniciansSection"
 
 @Composable
 fun TopTechniciansSection(modifier: Modifier = Modifier) {
-    val typography = LocalAppTypography.current
-    var selectedCategory by remember { mutableStateOf("All") }
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    LaunchedEffect(Unit) {
+        Log.d(TAG, "Bắt đầu lấy danh mục và tất cả kỹ thuật viên")
+        CategoryController.fetchCategories()
+        TopTechniciansController.fetchTechnicians()
+    }
+    var selectedCategoryId by remember { mutableStateOf(-1) }
+
+    val state by Store.stateFlow.collectAsState()
+    Log.d(
+        TAG,
+        "Trạng thái hiện tại: selectedCategoryId=$selectedCategoryId, số kỹ thuật viên=${state.topTechnicians.size}, số danh mục=${state.categories.size}"
     )
-    {
+
+    // Gọi API khi danh mục thay đổi
+    LaunchedEffect(selectedCategoryId) {
+        Log.i(TAG, "Danh mục thay đổi: selectedCategoryId=$selectedCategoryId")
+        if (selectedCategoryId == -1) {
+            Log.d(TAG, "Đang lấy tất cả kỹ thuật viên")
+            TopTechniciansController.fetchTechnicians()
+        } else {
+            Log.d(TAG, "Đang lấy kỹ thuật viên cho danh mục categoryId=$selectedCategoryId")
+            TopTechniciansController.fetchTechnicians(selectedCategoryId)
+        }
+    }
+
+    val typography = LocalAppTypography.current
+
+    Column(modifier = modifier) {
+
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -93,66 +117,136 @@ fun TopTechniciansSection(modifier: Modifier = Modifier) {
                 )
             }
 
-            Button(
-                onClick = {},
-                shape = RoundedCornerShape(40),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = AppTheme.colors.mainColor
-                ),
-                elevation = ButtonDefaults.buttonElevation(0.dp), // Loại bỏ bóng
-                border = ButtonDefaults.outlinedButtonBorder // Viền mỏng quanh nút
+//            Button(
+//                onClick = {},
+//                shape = RoundedCornerShape(40),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = Color.White,
+//                    contentColor = AppTheme.colors.mainColor
+//                ),
+//                elevation = ButtonDefaults.buttonElevation(0.dp), // Loại bỏ bóng
+//                border = ButtonDefaults.outlinedButtonBorder // Viền mỏng quanh nút
+//            ) {
+//                Row(verticalAlignment = Alignment.CenterVertically) {
+//                    Text(
+//                        text = "See All",
+//                        fontSize = 12.sp
+//                    )
+//                    Spacer(modifier = Modifier.width(4.dp))
+//                    Icon(
+//                        painter = painterResource(R.drawable.baseline_arrow_forward_ios_24),
+//                        contentDescription = "Arrow",
+//                        tint = AppTheme.colors.onBackgroundVariant,
+//                        modifier = Modifier.size(14.dp)
+//                    )
+//                }
+//            }
+
+
+        }
+
+        FilterSection(
+            state = state,
+            selectedCategory = selectedCategoryId,
+            onCategorySelected = { categoryId ->
+                val newCategoryId = if (categoryId == "All") -1 else categoryId.toIntOrNull() ?: -1
+                Log.i(TAG, "Đã chọn danh mục: categoryId=$categoryId, newCategoryId=$newCategoryId")
+                selectedCategoryId = newCategoryId
+            }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        TopTechniciansListSection(selectedCategory = selectedCategoryId, state = state)
+    }
+}
+
+private const val TAG_FILTER_SECTION = "FilterSection"
+
+@Composable
+fun FilterSection(
+    state: AppState,
+    selectedCategory: Int,
+    onCategorySelected: (String) -> Unit
+) {
+    Log.d(
+        TAG_FILTER_SECTION,
+        "Rendering FilterSection: isLoadingCategories=${state.isLoadingCategories}, categoriesCount=${state.categories.size}, selectedCategory=$selectedCategory"
+    )
+
+    when {
+        state.isLoadingCategories -> {
+            Log.i(TAG_FILTER_SECTION, "Displaying loading state for categories")
+            Text(
+                text = "Loading...",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        state.categoriesError != null -> {
+            Log.e(TAG_FILTER_SECTION, "Category error: ${state.categoriesError}")
+            Text(
+                text = "Error: ${state.categoriesError}",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        else -> {
+            Log.d(
+                TAG_FILTER_SECTION,
+                "Rendering category chips: ${state.categories.map { it.name }}"
+            )
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "See All",
-                        fontSize = 12.sp
+                // Chip "All"
+                item(key = "all") {
+                    FilterChip(
+                        category = "All",
+                        isElected = selectedCategory == -1,
+                        onClick = {
+                            Log.i(TAG_FILTER_SECTION, "All chip clicked")
+                            onCategorySelected("All")
+                        }
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_arrow_forward_ios_24),
-                        contentDescription = "Arrow",
-                        tint = AppTheme.colors.onBackgroundVariant,
-                        modifier = Modifier.size(14.dp)
+                }
+
+                // Category chips
+                items(
+                    items = state.categories,
+                    key = { it.categoryId }
+                ) { category ->
+                    FilterChip(
+                        category = category.name,
+                        isElected = selectedCategory == category.categoryId,
+                        onClick = {
+                            Log.i(
+                                TAG_FILTER_SECTION,
+                                "Category chip clicked: ${category.name} (id=${category.categoryId})"
+                            )
+                            onCategorySelected(category.categoryId.toString())
+                        }
                     )
                 }
             }
-
-
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        FilterSection(selectedCategory = selectedCategory) {
-            selectedCategory = it
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        ServiceListSection(selectedCategory = selectedCategory)
-
-    }
-}
-
-//-----------------------------------
-//Bộ lọc danh mục (FilterSection)
-@Composable
-fun FilterSection(selectedCategory: String, onCategorySelected: (String) -> Unit) {
-    val categories = listOf("All", "Electrical", "Plumber", "Painting", "Carpenter", "Mason")
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp)
-    ) {
-        items(categories) { category ->
-            FilterChip(category, isElected = category == selectedCategory) {
-                onCategorySelected(category)
-            }
         }
     }
 }
+
+
+private const val TAG_FILTER_CHIP = "FilterChip"
 
 @Composable
 fun FilterChip(category: String, isElected: Boolean, onClick: () -> Unit) {
+    Log.d(TAG_FILTER_CHIP, "Rendering FilterChip: category=$category, isElected=$isElected")
     Button(
-        onClick = onClick,
+        onClick = {
+            Log.i(TAG_FILTER_CHIP, "FilterChip clicked: category=$category")
+            onClick()
+        },
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isElected) AppTheme.colors.mainColor else Color.White,
             contentColor = if (isElected) Color.White else AppTheme.colors.mainColor
@@ -167,95 +261,191 @@ fun FilterChip(category: String, isElected: Boolean, onClick: () -> Unit) {
     }
 }
 
-//----------------
-//Hiển thị danh sách dịch vụ
+private const val TAG_TECHNICIANS_LIST = "TopTechniciansListSection"
 
 @Composable
-fun ServiceListSection(selectedCategory: String) {
-    val filteredList = serviceList.filter {
-        it.title.contains(
-            selectedCategory,
-            ignoreCase = true
-        ) || selectedCategory == "All"
-    }
-    if (filteredList.isEmpty()) {
-        Text(
-            text = "No services available",
-            modifier = Modifier.padding(16.dp),
-            color = Color.Gray,
-            style = AppTheme.typography.bodySmall
-        )
-    } else {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            filteredList.forEach { service ->
-                ServiceCard(service)
-            }
+fun TopTechniciansListSection(selectedCategory: Int, state: AppState) {
+    Log.d(
+        TAG_TECHNICIANS_LIST,
+        "Rendering TopTechniciansListSection: selectedCategory=$selectedCategory, isLoading=${state.isLoading}, techniciansCount=${state.topTechnicians.size}"
+    )
+
+    when {
+        state.isLoading -> {
+            Log.i(TAG_TECHNICIANS_LIST, "Displaying loading state for technicians")
+            Text(
+                text = "Loading technicians...",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
         }
 
-    }
+        state.error != null -> {
+            Log.e(TAG_TECHNICIANS_LIST, "Technicians error: ${state.error}")
+            Text(
+                text = "Error: ${state.error}",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
 
+        else -> {
+            val filteredList = state.topTechnicians.filter {
+                selectedCategory == -1 || it.categoryName == state.categories.find { category ->
+                    category.categoryId == selectedCategory
+                }?.name
+            }
+            Log.d(
+                TAG_TECHNICIANS_LIST,
+                "Filtered technicians: count=${filteredList.size}, selectedCategory=$selectedCategory"
+            )
+
+            if (filteredList.isEmpty()) {
+                Log.i(TAG_TECHNICIANS_LIST, "No technicians available for selected category")
+                Text(
+                    text = "No technicians available",
+                    modifier = Modifier.padding(16.dp),
+                    color = Color.Gray,
+                    style = AppTheme.typography.bodySmall
+                )
+            } else {
+                Log.d(TAG_TECHNICIANS_LIST, "Rendering ${filteredList.size} technician cards")
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    filteredList.forEach { technician ->
+                        TechnicianCard(technician)
+                    }
+                }
+            }
+        }
+    }
 }
+private const val TAG_TECHNICIAN_CARD = "TechnicianCard"
 
 @Composable
-fun ServiceCard(service: Service) {
-//    Text(text = "abc", style = LocalAppTypography.current.titleMedium, color = Color.Blue)
-    var isFavorite by remember { mutableStateOf(false) }//trạng thái yêu thích
+fun TechnicianCard(technician: TopTechnician) {
+    var isFavorite by remember { mutableStateOf(false) }
+    Log.d(
+        TAG_TECHNICIAN_CARD,
+        "Rendering TechnicianCard: technician=${technician.name}, service=${technician.serviceName}, isFavorite=$isFavorite"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface)
     ) {
-        Row(modifier = Modifier.padding(16.dp)) {
-            Image(
-                painter = painterResource(id = service.imageRes),
-                contentDescription = service.title,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Avatar
+            AsyncImage(
+                model = technician.avatarUrl,
+                contentDescription = "${technician.name}'s avatar",
                 modifier = Modifier
-                    .size(90.dp)
+                    .size(80.dp)
                     .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.coc),
+                error = painterResource(id = R.drawable.coc),
+                onLoading = {
+                    Log.d(TAG_TECHNICIAN_CARD, "Loading avatar for ${technician.name}: ${technician.avatarUrl}")
+                },
+                onSuccess = {
+                    Log.d(TAG_TECHNICIAN_CARD, "Avatar loaded successfully for ${technician.name}")
+                },
+                onError = {
+                    Log.e(TAG_TECHNICIAN_CARD, "Failed to load avatar for ${technician.name}: ${technician.avatarUrl}")
+                }
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = service.title, style = AppTheme.typography.titleSmall)
+            // Thông tin kỹ thuật viên
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Tên dịch vụ
                 Text(
-                    text = service.provider,
-                    style = AppTheme.typography.bodySmall,
-                    color = Color.Gray
+                    text = technician.name,
+                    style = AppTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppTheme.colors.onSurface
                 )
+
+                // Tên kỹ thuật viên
                 Text(
-                    text = service.price,
-                    style = AppTheme.typography.bodySmall,
-                    color = AppTheme.colors.mainColor,
-                    fontWeight = FontWeight.Bold
+                    text = technician.serviceName,
+                    style = AppTheme.typography.bodyMedium,
+                    color = AppTheme.colors.onBackgroundVariant
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                // Giá
+                Text(
+                    text = technician.price,
+                    style = AppTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.mainColor
+                )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Star,
-                        contentDescription = "Rating",
-                        tint = Color(0xFFFFD700)
-                    )
+                // Đánh giá và số đơn
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Hiển thị sao dựa trên rating
+                    val rating = technician.rating.coerceIn(0.0, 5.0)
+                    val fullStars = rating.toInt()
+                    val hasHalfStar = rating % 1 >= 0.5
+                    repeat(5) { index ->
+                        Icon(
+                            imageVector = when {
+                                index < fullStars -> Icons.Default.Star
+                                index == fullStars && hasHalfStar -> Icons.AutoMirrored.Filled.StarHalf
+                                else -> Icons.Default.StarBorder
+                            },
+                            contentDescription = null,
+                            tint = Color(0xFFF3B700),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+//                    Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
-                        text = "${service.rating} | ${service.reviews} Reviews",
+                        text = String.format("%.1f", technician.rating),
                         style = AppTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = AppTheme.colors.onBackgroundVariant
+                    )
+
+                    Text(
+                        text = " | ${technician.completedOrders} Đơn",
+                        style = AppTheme.typography.bodySmall,
+                        color = AppTheme.colors.onBackgroundVariant
                     )
                 }
             }
 
-            IconButton(onClick = { isFavorite = !isFavorite }) {
+            // Nút yêu thích
+            IconButton(onClick = {
+                isFavorite = !isFavorite
+                Log.i(TAG_TECHNICIAN_CARD, "Favorite button clicked for ${technician.name}: isFavorite=$isFavorite")
+            }) {
                 Icon(
-                    imageVector = if(isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if(isFavorite) "Add to favorites" else "Remove from favorites",
-                    tint = if(isFavorite) Color.Red else Color.Gray
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Xóa khỏi yêu thích" else "Thêm vào yêu thích",
+                    tint = if (isFavorite) AppTheme.colors.secondarySurface else AppTheme.colors.onBackgroundVariant,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

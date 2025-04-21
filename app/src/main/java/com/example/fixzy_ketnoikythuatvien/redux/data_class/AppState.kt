@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.Color
 import com.example.fixzy_ketnoikythuatvien.data.model.CategoryData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
+import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
+
 //lớp chứa các model dữ liệu
 data class AppState(
     val test: List<TestItem> = arrayListOf(),//định nghĩa trạng thái ứng dụng chứa một danh sách TestItem // mặc định rỗng
@@ -11,5 +13,9 @@ data class AppState(
 
     val categories: List<CategoryData> = emptyList(), // Danh sách các danh mục (mặc định rỗng)
     val isLoadingCategories: Boolean = false,        // Cờ hiển thị trạng thái đang tải danh mục
-    val categoriesError: String? = null              // Lỗi (nếu có) khi tải danh mục (null nếu không lỗi)
+    val categoriesError: String? = null,              // Lỗi (nếu có) khi tải danh mục (null nếu không lỗi)
+
+    val topTechnicians: List<TopTechnician> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null,
 )

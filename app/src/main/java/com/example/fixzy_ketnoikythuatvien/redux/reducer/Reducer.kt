@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 
+private const val TAG = "Reducer"
 //xử lí các hoạt động và cập nhật trạng thái
 //Lớp xử l logic chuyển đổi trạng thái
 class Reducer {
@@ -38,7 +39,29 @@ class Reducer {
                         categoriesError = action.error
                     )
                 }
-                else -> state //khoong khớp, giữ trạng thái hiện tại
+                is Action.FetchTopTechnicians -> {
+                    Log.i(TAG, "Đặt isLoading=true cho kỹ thuật viên, categoryId=${action.categoryId}")
+                    state.copy(isLoading = true, error = null)
+                }
+                is Action.TopTechniciansLoaded -> {
+                    Log.i(TAG, "Kỹ thuật viên đã tải: số lượng=${action.technicians.size}, chi tiết=${action.technicians.map { it.name }}")
+                    state.copy(
+                        isLoading = false,
+                        topTechnicians = action.technicians,
+                        error = null
+                    )
+                }
+                is Action.TopTechniciansLoadFailed -> {
+                    Log.e(TAG, "Lỗi tải kỹ thuật viên: ${action.error}")
+                    state.copy(
+                        isLoading = false,
+                        error = action.error
+                    )
+                }
+                else -> {
+                    Log.w(TAG, "Action không được xử lý: $action")
+                    state
+                }
             }
         }
     }

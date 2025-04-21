@@ -19,7 +19,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @Composable
 fun HideSystemUI() {
     val systemUiController = rememberSystemUiController()
-
     SideEffect {
         systemUiController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         systemUiController.isSystemBarsVisible = false // Ẩn cả thanh trạng thái và thanh điều hướng
@@ -31,7 +30,6 @@ class MainActivity : ComponentActivity() {
     private fun testFirebaseConnection() {
         val db = FirebaseDatabase.getInstance()
         val ref = db.getReference("test_connection")
-
         ref.setValue("Hello from Fixzy App!")
             .addOnSuccessListener {
                 Log.d("FIREBASE_TEST", "✅ Gửi dữ liệu thành công!")
@@ -42,8 +40,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // Đảm bảo chế độ edge-to-edge nếu cần
-
+        enableEdgeToEdge()
         setContent {
             AppTheme {
                 HideSystemUI()
@@ -52,6 +49,4 @@ class MainActivity : ComponentActivity() {
         }
         testFirebaseConnection()
     }
-
-
 }

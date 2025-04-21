@@ -25,6 +25,7 @@ import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.data.model.CategoryData
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.CategoryService
+import com.example.fixzy_ketnoikythuatvien.ui.screen.controller.CategoryController
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTypography
 import com.example.fixzy_ketnoikythuatvien.ui.theme.LocalAppTypography
@@ -38,7 +39,7 @@ fun CategoriesSection(modifier: Modifier = Modifier,navController: NavController
 
     LaunchedEffect(Unit) {
         Log.d(TAG, "Fetching categories...")
-        categoryService.fetchCategories()
+        CategoryController.fetchCategories()
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -114,12 +115,12 @@ fun CategoriesSection(modifier: Modifier = Modifier,navController: NavController
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    items(state.categories.take(3)) { category ->
+                    items(state.categories.take(4)) { category ->
                         CategoryItem(category, typography)
                     }
-                    item {
-                        SeeAllCategory({}, typography)
-                    }
+//                    item {
+//                        SeeAllCategory({}, typography)
+//                    }
                 }
             }
         }
