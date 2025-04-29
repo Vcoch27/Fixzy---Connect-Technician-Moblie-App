@@ -1,5 +1,7 @@
 package com.example.fixzy_ketnoikythuatvien.service.model
 
+import com.google.gson.annotations.SerializedName
+
 data class ApiCategory(
     val category_id: Int,
     val name: String,
@@ -38,4 +40,24 @@ data class TopTechnician(
     val completedOrders: Int,
     val categoryName: String,
     val categoryId: Int // Add this field
+)
+
+data class ServiceResponse(
+    val success: Boolean,
+    val data: List<Service>
+)
+
+data class Service(
+    @SerializedName("service_id") val serviceId: Int,
+    @SerializedName("category_id") val categoryId: Int,
+    @SerializedName("provider_id") val providerId: Int,
+    val name: String,
+    val price: String,
+    val description: String,
+    @SerializedName("created_at") val createdAt: String,
+    val rating: Double,
+    @SerializedName("orders_completed") val ordersCompleted: Int,
+    @SerializedName("category_name") val categoryName: String,
+    @SerializedName("provider_name") val providerName: String,
+    @SerializedName("provider_rating") val providerRating: Double
 )

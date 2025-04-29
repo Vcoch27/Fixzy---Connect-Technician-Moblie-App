@@ -166,6 +166,8 @@ class AuthService {
                             },
                             onError = onError
                         )
+                        Log.i(TAG, "ID Token retrieved: $idToken")
+
                     } else {
                         Log.e(TAG, "User data from backend is null")
                         onError("Failed to retrieve user data from backend")

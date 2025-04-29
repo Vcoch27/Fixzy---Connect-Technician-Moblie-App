@@ -8,7 +8,6 @@ plugins {
 android {
     namespace = "com.example.fixzy_ketnoikythuatvien"
     compileSdk = 35
-
     defaultConfig {
         applicationId = "com.example.fixzy_ketnoikythuatvien"
         minSdk = 24
@@ -22,11 +21,11 @@ android {
     buildTypes {
         getByName("debug") {
             //wifi
-            buildConfigField("String", "BASE_URL", "\"http://192.168.1.7:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.8:3000/\"")
 //            buildConfigField("String", "BASE_URL", "\"http://10.23.13.51:3000/\"")
         }
         getByName("release") {
-            buildConfigField("String", "BASE_URL", "\"https://192.168.1.10:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"https://192.168.1.27:3000/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -85,13 +84,10 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-flowlayout:0.30.1")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
-
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-
     implementation ("org.reduxkotlin:redux-kotlin-threadsafe:0.5.5")
-
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }

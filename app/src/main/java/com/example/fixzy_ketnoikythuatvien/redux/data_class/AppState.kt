@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.example.fixzy_ketnoikythuatvien.data.model.CategoryData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
+import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 
 //lớp chứa các model dữ liệu
@@ -18,4 +19,9 @@ data class AppState(
     val topTechnicians: List<TopTechnician> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
+
+    val selectedCategory: CategoryData? = null, // Category được chọn
+    val services: List<Service> = emptyList(), // Danh sách services
+    val isLoadingServices: Boolean = false,    // Trạng thái loading services
+    val servicesError: String? = null          // Lỗi khi lấy services
 )

@@ -58,6 +58,29 @@ class Reducer {
                         error = action.error
                     )
                 }
+                is Action.SelectCategory -> {
+                    Log.i(TAG, "Đã chọn danh mục: ${action.category?.name}")
+                    state.copy(selectedCategory = action.category, services = emptyList())
+                }
+                is Action.FetchServicesRequest -> {
+                    Log.i(TAG, "Đặt isLoadingServices=true")
+                    state.copy(isLoadingServices = true, servicesError = null)
+                }
+                is Action.FetchServicesSuccess -> {
+                    Log.i(TAG, "Dịch vụ đã tải: số lượng=${action.services.size}, chi tiết=${action.services.map { it.name }}")
+                    state.copy(
+                        isLoadingServices = false,
+                        services = action.services,
+                        servicesError = null
+                    )
+                }
+                is Action.FetchServicesFailure -> {
+                    Log.e(TAG, "Lỗi tải dịch vụ: ${action.error}")
+                    state.copy(
+                        isLoadingServices = false,
+                        servicesError = action.error
+                    )
+                }
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")
                     state

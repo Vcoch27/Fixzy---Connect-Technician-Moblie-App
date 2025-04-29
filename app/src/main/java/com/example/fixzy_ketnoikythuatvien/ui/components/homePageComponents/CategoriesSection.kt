@@ -116,7 +116,7 @@ fun CategoriesSection(modifier: Modifier = Modifier,navController: NavController
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     items(state.categories.take(4)) { category ->
-                        CategoryItem(category, typography)
+                        CategoryItem(category, typography, onClick = {})
                     }
 //                    item {
 //                        SeeAllCategory({}, typography)
@@ -127,11 +127,14 @@ fun CategoriesSection(modifier: Modifier = Modifier,navController: NavController
     }
 }
 @Composable
-fun CategoryItem(category: CategoryData, typography: AppTypography) {
+fun CategoryItem(category: CategoryData, typography: AppTypography, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(8.dp)
-            .clickable { Log.d("CategoryItem", "Clicked on ${category.name}") },
+            .clickable {
+                Log.d("CategoryItem", "Clicked on ${category.name}")
+                onClick() // Gọi onClick khi nhấn
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -152,32 +155,32 @@ fun CategoryItem(category: CategoryData, typography: AppTypography) {
         Text(text = category.name, fontSize = 12.sp, style = typography.bodySmall)
     }
 }
-
-@Composable
-fun SeeAllCategory(onClick: () -> Unit, typography: AppTypography) {
-    Column(
-        modifier = Modifier
-            .padding(8.dp)
-            .clickable {
-                Log.d("SeeAllCategory", "See All clicked")
-                onClick()
-            },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .background(Color.LightGray, shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "See All",
-                modifier = Modifier.size(24.dp),
-                tint = Color.Black
-            )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = "See All", fontSize = 12.sp, style = typography.bodySmall)
-    }
-}
+//
+//@Composable
+//fun SeeAllCategory(onClick: () -> Unit, typography: AppTypography) {
+//    Column(
+//        modifier = Modifier
+//            .padding(8.dp)
+//            .clickable {
+//                Log.d("SeeAllCategory", "See All clicked")
+//                onClick()
+//            },
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .size(56.dp)
+//                .background(Color.LightGray, shape = CircleShape),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Icon(
+//                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+//                contentDescription = "See All",
+//                modifier = Modifier.size(24.dp),
+//                tint = Color.Black
+//            )
+//        }
+//        Spacer(modifier = Modifier.height(4.dp))
+//        Text(text = "See All", fontSize = 12.sp, style = typography.bodySmall)
+//    }
+//}

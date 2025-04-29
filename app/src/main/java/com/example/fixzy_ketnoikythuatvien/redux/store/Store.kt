@@ -13,11 +13,9 @@ private const val TAG = "Store"
 class Store {
     companion object {
         private val reduxStore = createStore(appReducer, AppState())
-
         // Tạo StateFlow để phát ra trạng thái
         private val _stateFlow = MutableStateFlow(reduxStore.getState())
         val stateFlow: StateFlow<AppState> get() = _stateFlow
-
         // Store gốc để dispatch action
         val store: ReduxStore<AppState> = reduxStore.apply {
             subscribe {

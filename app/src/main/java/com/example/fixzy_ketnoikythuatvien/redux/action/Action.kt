@@ -3,6 +3,7 @@ package com.example.fixzy_ketnoikythuatvien.redux.action
 import com.example.fixzy_ketnoikythuatvien.data.model.CategoryData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
+import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 
 //định nghĩa các hành động có thể thực hiện
@@ -21,4 +22,10 @@ sealed class Action{
     data class FetchTopTechnicians(val categoryId: String? = null) : Action()
     data class TopTechniciansLoaded(val technicians: List<TopTechnician>) : Action()
     data class TopTechniciansLoadFailed(val error: String) : Action()
+
+    // Actions mới cho services
+    data class SelectCategory(val category: CategoryData?) : Action()
+    object FetchServicesRequest : Action()
+    data class FetchServicesSuccess(val services: List<Service>) : Action()
+    data class FetchServicesFailure(val error: String) : Action()
 }

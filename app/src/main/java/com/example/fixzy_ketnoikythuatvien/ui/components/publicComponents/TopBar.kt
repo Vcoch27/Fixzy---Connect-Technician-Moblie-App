@@ -29,7 +29,7 @@ import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 @Composable
 fun TopBar(navController: NavController, title: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier, // ✅ Dùng modifier từ bên ngoài
+        modifier = modifier.padding(top = 8.dp), // ✅ Dùng modifier từ bên ngoài
         verticalAlignment = Alignment.CenterVertically
     ) {
 
