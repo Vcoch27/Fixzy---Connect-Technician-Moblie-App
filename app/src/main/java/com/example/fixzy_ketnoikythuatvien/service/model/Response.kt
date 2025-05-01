@@ -21,7 +21,7 @@ data class TopTechnicianResponse(
 data class TopTechnicianDto(
     val technician_id: Int,
     val full_name: String,
-    val avatar_url: String,
+    val avatar_url: String?,
     val service_id: Int,
     val service_name: String,
     val service_price: String,
@@ -33,7 +33,7 @@ data class TopTechnicianDto(
 data class TopTechnician(
     val id: Int,
     val name: String,
-    val avatarUrl: String,
+    val avatarUrl: String?,
     val serviceName: String,
     val price: String,
     val rating: Double,
@@ -58,6 +58,6 @@ data class Service(
     val rating: Double,
     @SerializedName("orders_completed") val ordersCompleted: Int,
     @SerializedName("category_name") val categoryName: String,
-    @SerializedName("provider_name") val providerName: String,
+    @SerializedName("provider_name") val providerName: String?,
     @SerializedName("provider_rating") val providerRating: Double
 )

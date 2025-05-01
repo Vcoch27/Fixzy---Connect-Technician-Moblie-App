@@ -282,8 +282,8 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
         }
     }
 }
-private const val TAG_SERVICE_CARD = "ServiceCard"
 
+private const val TAG_SERVICE_CARD = "ServiceCard"
 @Composable
 fun ServiceCard(service: Service) {
     var isFavorite by remember { mutableStateOf(false) }
@@ -300,6 +300,7 @@ fun ServiceCard(service: Service) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface)
     ) {
+        Log.d(TAG_SERVICE_CARD, "Rendering ServiceCard content for ${service.providerName}")
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -334,7 +335,7 @@ fun ServiceCard(service: Service) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = service.providerName,
+                    text = service.providerName?:"Unknown",
                     style = AppTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = AppTheme.colors.onSurface

@@ -18,6 +18,9 @@ class ServiceService {
         try {
             val response = apiService.getServicesByCategory(categoryId)
             Log.d(TAG, "API response: success=${response.success}, data size=${response.data?.size ?: 0}")
+            response.data.forEach { service ->
+                Log.d(TAG, "Service: name=${service.name}, providerName=${service.providerName}")
+            }
 
             if (response.success) {
                 Log.i(TAG, "Services fetched successfully: ${response.data.size} items")
