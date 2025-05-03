@@ -81,6 +81,29 @@ class Reducer {
                         servicesError = action.error
                     )
                 }
+                is Action.FetchProviderRequest -> {
+                    Log.i(TAG, "Fetching provider details...")
+                    state.copy(isLoadingProvider = true, providerError = null)
+                }
+                is Action.FetchProviderSuccess -> {
+                    Log.i(TAG, "Provider fetched: ${action.provider.name}")
+                    state.copy(
+                        isLoadingProvider = false,
+                        provider = action.provider,
+                        providerError = null
+                    )
+                }
+                is Action.FetchProviderFailure -> {
+                    Log.e(TAG, "Failed to fetch provider: ${action.error}")
+                    state.copy(
+                        isLoadingProvider = false,
+                        providerError = action.error
+                    )
+                }
+                is Action.FetchAvailabilityRequest -> state.copy(isLoadingAvailability = true, availabilityError = null)
+                is Action.FetchAvailabilitySuccess -> state.copy(isLoadingAvailability = false, availability = action.availability)
+                is Action.FetchAvailabilityFailure -> state.copy(isLoadingAvailability = false, availabilityError = action.error)
+                is Action.SelectService -> state.copy(selectedService = action.service)
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")
                     state

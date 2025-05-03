@@ -4,7 +4,10 @@ import android.util.Log
 import com.example.fixzy_ketnoikythuatvien.BuildConfig
 import com.example.fixzy_ketnoikythuatvien.data.model.SyncUserRequest
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
+import com.example.fixzy_ketnoikythuatvien.service.model.Availability
+import com.example.fixzy_ketnoikythuatvien.service.model.AvailabilityResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.CategoryResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnicianResponse
@@ -55,4 +58,11 @@ interface ApiService {
 
     @GET("service/category/{categoryId}")
     suspend fun getServicesByCategory(@Path("categoryId") categoryId: Int): ServiceResponse
+
+    @GET("user/provider/{providerId}")
+    suspend fun getProviderDetails(@Path("providerId") providerId: Int): Response<ProviderResponse>
+
+    @GET("/service/{serviceId}/availability")
+    suspend fun getAvailability(@Path("serviceId") serviceId: Int): Response<AvailabilityResponse>
+
 }

@@ -3,7 +3,10 @@ package com.example.fixzy_ketnoikythuatvien.redux.action
 import com.example.fixzy_ketnoikythuatvien.data.model.CategoryData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
+import com.example.fixzy_ketnoikythuatvien.service.model.Availability
+import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
+import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 
 //định nghĩa các hành động có thể thực hiện
@@ -28,4 +31,13 @@ sealed class Action{
     object FetchServicesRequest : Action()
     data class FetchServicesSuccess(val services: List<Service>) : Action()
     data class FetchServicesFailure(val error: String) : Action()
+
+    object FetchProviderRequest : Action() // Action mới để yêu cầu tải provider
+    data class FetchProviderSuccess(val provider: ProviderData) : Action() // Action khi tải thành công
+    data class FetchProviderFailure(val error: String) : Action()
+
+    object FetchAvailabilityRequest : Action()
+    data class FetchAvailabilitySuccess(val availability: List<Availability>) : Action()
+    data class FetchAvailabilityFailure(val error: String) : Action()
+    data class SelectService(val service: ServiceDetail?) : Action()
 }
