@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +35,7 @@ fun CategoriesSection(modifier: Modifier = Modifier,navController: NavController
     val TAG = "CategoriesSection"
     val typography = LocalAppTypography.current
     val state by Store.Companion.stateFlow.collectAsState() // Sử dụng StateFlow
+    val categoryService = remember { CategoryService() }
 
     LaunchedEffect(Unit) {
         Log.d(TAG, "Fetching categories...")
@@ -60,6 +63,7 @@ fun CategoriesSection(modifier: Modifier = Modifier,navController: NavController
                     color = AppTheme.colors.onBackground
                 )
             }
+
             Button(
                 onClick = {},
                 shape = RoundedCornerShape(40),
@@ -114,6 +118,9 @@ fun CategoriesSection(modifier: Modifier = Modifier,navController: NavController
                     items(state.categories.take(4)) { category ->
                         CategoryItem(category, typography, onClick = {})
                     }
+//                    item {
+//                        SeeAllCategory({}, typography)
+//                    }
                 }
             }
         }
