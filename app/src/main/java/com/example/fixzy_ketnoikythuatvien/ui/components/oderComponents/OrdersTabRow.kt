@@ -49,18 +49,7 @@ fun OrdersTabRow(
                     .background(
                         if (selectedTabIndex == index) AppTheme.colors.mainColor else Color.White
                     )
-//                    .drawBehind {
-//                        if (selectedTabIndex != index) { // Chỉ vẽ border nếu không phải tab được chọn
-//                            val borderSize = 2.dp.toPx() // Độ dày của border
-//                            drawLine(
-//                                color = Color.LightGray, // Màu của border
-//                                start = Offset(0f, size.height - borderSize),
-//                                end = Offset(size.width, size.height - borderSize),
-//                                strokeWidth = borderSize
-//                            )
-//                        }
-//                    }
-//                    .clip(if (selectedTabIndex == index) RoundedCornerShape(12.dp) else RoundedCornerShape(0.dp)) // Bo góc nếu được chọn
+
             )
 
         }

@@ -6,6 +6,7 @@ import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
 import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
+import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
@@ -41,5 +42,7 @@ data class AppState(
     val booking: Booking? = null,
     val isCreatingBooking: Boolean = false,
     val createBookingError: String? = null,
-    val referenceCode: String? = null
+    val referenceCode: String? = null,
+
+    val bookings: List<DetailBooking> = emptyList()
 )
