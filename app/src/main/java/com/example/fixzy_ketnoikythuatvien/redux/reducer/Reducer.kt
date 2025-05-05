@@ -61,6 +61,23 @@ class Reducer {
                         categoriesError = action.error
                     )
                 }
+                is Action.FetchBookings -> {
+                    state.copy(isLoading = true, error = null)
+                }
+                is Action.FetchBookingsSuccess -> {
+                    state.copy(
+                        isLoading = false,
+                        bookings = action.bookings,
+                        error = null
+                    )
+                }
+                is Action.FetchBookingsFailure -> {
+                    state.copy(
+                        isLoading = false,
+                        error = action.error
+                    )
+                }
+
                 is Action.FetchTopTechnicians -> {
                     Log.i(TAG, "Đặt isLoading=true cho kỹ thuật viên, categoryId=${action.categoryId}")
                     state.copy(isLoading = true, error = null)
@@ -160,16 +177,24 @@ class Reducer {
                     isCreatingBooking = true,
                     createBookingError = null
                 )
+                is Action.StartCreatingBooking -> state.copy(
+                    isCreatingBooking = true,
+                    createBookingError = null
+                )
                 is Action.CreateBookingSuccess -> state.copy(
-                    isCreatingBooking = false,
                     referenceCode = action.referenceCode,
+                    isCreatingBooking = false, // Reset sau khi thành công
                     createBookingError = null
                 )
                 is Action.CreateBookingFailure -> state.copy(
-                    isCreatingBooking = false,
-                    createBookingError = action.error
+                    createBookingError = action.error,
+                    isCreatingBooking = false
                 )
-
+                is Action.ResetBookingState -> state.copy(
+                    referenceCode = null,
+                    isCreatingBooking = false,
+                    createBookingError = null
+                )
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")
                     state

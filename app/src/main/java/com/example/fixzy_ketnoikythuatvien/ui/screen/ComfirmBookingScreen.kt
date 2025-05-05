@@ -1,6 +1,9 @@
 package com.example.fixzy_ketnoikythuatvien.ui.screen
 
+import android.os.Build
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -8,20 +11,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import android.Manifest
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.BookingService
 import com.example.fixzy_ketnoikythuatvien.service.ProviderService
+import com.example.fixzy_ketnoikythuatvien.ui.components.notifications.CustomAlertDialog
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
+import com.example.fixzy_ketnoikythuatvien.utils.NotificationHelper
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
 @Composable
 fun ConfirmBookingScreen(
     navController: NavController,
@@ -32,10 +38,13 @@ fun ConfirmBookingScreen(
     val store = Store.store
     val bookingService = remember { BookingService() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var address by remember { mutableStateOf(state.user?.address ?: "") }
     var phone by remember { mutableStateOf(state.user?.phone ?: "") }
     var notes by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
 
     val isFormValid = remember(address, phone) {
         address.isNotBlank() && phone.isNotBlank() && phone.length >= 10
@@ -48,20 +57,37 @@ fun ConfirmBookingScreen(
         else -> null
     }
 
-    LaunchedEffect(state.referenceCode) {
-        state.referenceCode?.let { code ->
-            navController.navigate("booking_success_screen/$code") {
-                popUpTo("confirm_booking") { inclusive = true }
-            }
-        }
-    }
-
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { _ -> }
     LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
         if (state.booking?.serviceId == null || state.booking?.availabilityId == null) {
             store.dispatch(Action.CreateBookingFailure("Incomplete booking data"))
             navController.popBackStack()
         }
     }
+
+    LaunchedEffect(state.referenceCode) {
+        if (state.referenceCode != null) {
+            Log.d("ConfirmBookingScreen", "Reference Code: ${state.referenceCode}")
+            dialogMessage = "Đặt lịch thành công! Mã: ${state.referenceCode}"
+            showDialog = true
+            NotificationHelper.showBookingSuccessNotification(context, state.referenceCode!!)
+            delay(2000)
+            showDialog = false
+            navController.navigate("orders_page") {
+                popUpTo("confirm_booking") { inclusive = true }
+            }
+            store.dispatch(Action.ResetBookingState)
+        }
+    }
+
+    CustomAlertDialog(
+        message = dialogMessage,
+        showDialog = showDialog,
+        onDismiss = { showDialog = false }
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -77,6 +103,9 @@ fun ConfirmBookingScreen(
                 Button(
                     onClick = {
                         if (!isFormValid) return@Button
+                        dialogMessage = "Đang xử lý..."
+                        showDialog = true
+                        store.dispatch(Action.ResetBookingState)
                         scope.launch {
                             try {
                                 bookingService.createBooking(
@@ -86,7 +115,13 @@ fun ConfirmBookingScreen(
                                     phone = phone,
                                     notes = notes.takeIf { it.isNotBlank() }
                                 )
+                                Log.d("ConfirmBookingScreen", "Booking created successfully")
+                                showDialog = false // Đóng dialog ngay sau khi gọi API
                             } catch (e: Exception) {
+                                dialogMessage = "Lỗi: ${e.message}"
+                                showDialog = true
+                                delay(2000)
+                                showDialog = false
                                 store.dispatch(Action.CreateBookingFailure("Failed to create booking: ${e.message}"))
                             }
                         }
@@ -153,27 +188,13 @@ fun ConfirmBookingScreen(
     }
 }
 
-
 @Composable
 fun BookingInfoItem(label: String, value: String) {
-    Log.v("BookingInfoItem", "Rendering item: $label = $value")
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = label,
-            style = AppTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = AppTheme.colors.onBackground.copy(alpha = 0.6f)
-        )
-        Text(
-            text = value,
-            style = AppTheme.typography.bodyMedium,
-            color = AppTheme.colors.onBackground,
-            fontWeight = FontWeight.Medium
-        )
+        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
     }
 }

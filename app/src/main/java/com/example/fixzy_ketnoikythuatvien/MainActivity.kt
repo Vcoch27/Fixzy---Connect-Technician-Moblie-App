@@ -2,6 +2,7 @@ package com.example.fixzy_ketnoikythuatvien
 
 import androidx.compose.runtime.Composable
 import android.app.Activity
+import android.os.Build
 import com.google.firebase.database.FirebaseDatabase
 import android.os.Bundle
 import android.util.Log
@@ -9,9 +10,11 @@ import androidx.activity.ComponentActivity
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.SideEffect
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.fixzy_ketnoikythuatvien.ui.navigation.AppNavigation
+import com.example.fixzy_ketnoikythuatvien.utils.NotificationHelper
 
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -38,8 +41,10 @@ class MainActivity : ComponentActivity() {
                 Log.e("FIREBASE_TEST", "❌ Lỗi kết nối Firebase", e)
             }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        NotificationHelper.createNotificationChannel(this)
         enableEdgeToEdge()
         setContent {
             AppTheme {

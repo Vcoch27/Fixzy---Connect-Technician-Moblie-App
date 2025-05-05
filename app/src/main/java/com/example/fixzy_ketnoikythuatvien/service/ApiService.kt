@@ -1,17 +1,16 @@
 package com.example.fixzy_ketnoikythuatvien.service
 
-import android.util.Log
 import com.example.fixzy_ketnoikythuatvien.BuildConfig
-import com.example.fixzy_ketnoikythuatvien.data.model.SyncUserRequest
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserDataResponse
-import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.AvailabilityResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.CategoryResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
+import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceResponse
-import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnicianResponse
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -71,11 +70,13 @@ interface ApiService {
     @GET("/service/{serviceId}/availability")
     suspend fun getAvailability(@Path("serviceId") serviceId: Int): Response<AvailabilityResponse>
 
-    @POST("booking")
+    @POST("bookings")
     @Headers("Content-Type: application/json")
     fun createBooking(
         @Header("Authorization") token: String,
-        @Body body: Map<String, Any>
+        @Body body: CreateBookingRequest
     ): Call<CreateBookingResponse>
 
+    @GET("bookings/user")
+    fun getBookingsForUser(@Header("Authorization") token: String): Call<GetBookingsResponse>
 }

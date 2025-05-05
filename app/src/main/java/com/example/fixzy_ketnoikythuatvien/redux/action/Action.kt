@@ -4,6 +4,7 @@ import com.example.fixzy_ketnoikythuatvien.data.model.CategoryData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
 import com.example.fixzy_ketnoikythuatvien.service.model.Availability
+import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
@@ -19,13 +20,10 @@ sealed class Action{
     data class FetchUserDataFailure(val error: String) : Action()
 
     // Add actions for categories
-    object FetchCategoriesRequest : Action() //dispath để yêu cầu tải danh mục
-    data class FetchCategoriesSuccess(val categories: List<CategoryData>) : Action() //dispath khi api trả về danh mục thành công
+    object FetchCategoriesRequest : Action()
+    data class FetchCategoriesSuccess(val categories: List<CategoryData>) : Action()
     data class FetchCategoriesFailure(val error: String) : Action()
 
-    object FetchTopTechniciansRequest : Action()
-//    data class FetchTopTechniciansSuccess(val technicians: List<TopTechnician>) : Action()
-//    data class FetchTopTechniciansFailure(val error: String) : Action()
     data class FetchTopTechnicians(val categoryId: String? = null) : Action()
     data class TopTechniciansLoaded(val technicians: List<TopTechnician>) : Action()
     data class TopTechniciansLoadFailed(val error: String) : Action()
@@ -35,6 +33,10 @@ sealed class Action{
     object FetchServicesRequest : Action()
     data class FetchServicesSuccess(val services: List<Service>) : Action()
     data class FetchServicesFailure(val error: String) : Action()
+
+    object FetchBookings : Action()
+    data class FetchBookingsSuccess(val bookings: List<DetailBooking>) : Action()
+    data class FetchBookingsFailure(val error: String) : Action()
 
     object FetchProviderRequest : Action() // Action mới để yêu cầu tải provider
     data class FetchProviderSuccess(val provider: ProviderData) : Action() // Action khi tải thành công
@@ -59,6 +61,11 @@ sealed class Action{
     ) : Action()
     data class DateForBooking(val date: String) : Action()
     object CreateBooking : Action()
+
+    object StartCreatingBooking : Action()
     data class CreateBookingSuccess(val referenceCode: String) : Action()
     data class CreateBookingFailure(val error: String) : Action()
+    object ResetBookingState : Action()
+
+
 }
