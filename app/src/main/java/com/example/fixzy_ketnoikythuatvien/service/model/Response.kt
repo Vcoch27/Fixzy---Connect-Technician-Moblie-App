@@ -61,3 +61,5 @@ data class Service(
     @SerializedName("provider_name") val providerName: String?,
     @SerializedName("provider_rating") val providerRating: Double
 )
+
+

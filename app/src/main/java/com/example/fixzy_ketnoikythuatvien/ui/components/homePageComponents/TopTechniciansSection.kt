@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
@@ -64,7 +66,7 @@ import com.example.fixzy_ketnoikythuatvien.ui.theme.LocalAppTypography
 private const val TAG = "TopTechniciansSection"
 
 @Composable
-fun TopTechniciansSection(modifier: Modifier = Modifier) {
+fun TopTechniciansSection(modifier: Modifier = Modifier,navController: NavController) {
     LaunchedEffect(Unit) {
         Log.d(TAG, "Bắt đầu lấy danh mục và tất cả kỹ thuật viên")
         CategoryController.fetchCategories()
@@ -155,7 +157,7 @@ fun TopTechniciansSection(modifier: Modifier = Modifier) {
             }
         )
         Spacer(modifier = Modifier.height(8.dp))
-        TopTechniciansListSection(selectedCategory = selectedCategoryId, state = state)
+        TopTechniciansListSection(selectedCategory = selectedCategoryId, state = state, navController = navController)
     }
 }
 
@@ -264,7 +266,7 @@ fun FilterChip(category: String, isElected: Boolean, onClick: () -> Unit) {
 private const val TAG_TECHNICIANS_LIST = "TopTechniciansListSection"
 
 @Composable
-fun TopTechniciansListSection(selectedCategory: Int, state: AppState) {
+fun TopTechniciansListSection(selectedCategory: Int, state: AppState,navController: NavController) {
     Log.d(
         TAG_TECHNICIANS_LIST,
         "Rendering TopTechniciansListSection: selectedCategory=$selectedCategory, isLoading=${state.isLoading}, techniciansCount=${state.topTechnicians.size}"
@@ -315,7 +317,7 @@ fun TopTechniciansListSection(selectedCategory: Int, state: AppState) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     filteredList.forEach { technician ->
-                        TechnicianCard(technician)
+                        TechnicianCard(technician, navController)
                     }
                 }
             }
@@ -325,7 +327,7 @@ fun TopTechniciansListSection(selectedCategory: Int, state: AppState) {
 private const val TAG_TECHNICIAN_CARD = "TechnicianCard"
 
 @Composable
-fun TechnicianCard(technician: TopTechnician) {
+fun TechnicianCard(technician: TopTechnician,navController: NavController) {
     var isFavorite by remember { mutableStateOf(false) }
     Log.d(
         TAG_TECHNICIAN_CARD,
@@ -335,7 +337,11 @@ fun TechnicianCard(technician: TopTechnician) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clickable {
+                val providerId = technician.id
+                navController.navigate("provider_screen/$providerId")
+            },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface)

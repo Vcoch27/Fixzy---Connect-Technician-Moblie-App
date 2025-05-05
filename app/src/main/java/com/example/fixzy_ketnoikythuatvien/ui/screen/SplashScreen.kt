@@ -49,6 +49,7 @@ fun SplashScreen(navController: NavController) {
                                 if (user != null) {
                                     Log.d(TAG, "User data received, dispatching to store and navigating to home")
                                     Store.store.dispatch(Action.setUser(user))
+                                    authService.getUserData()
                                     navController.navigate("home_page") {
                                         popUpTo("splash_screen") { inclusive = true }
                                     }

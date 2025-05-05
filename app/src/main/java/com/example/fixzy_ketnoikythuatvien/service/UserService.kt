@@ -20,6 +20,7 @@ class UserService {
         return response
     }
 
+//    xử lý side effects (API, ánh xạ dữ liệu)
     suspend fun dispatch(action: Action, dispatch: (Action) -> Unit) {
         Log.d(TAG, "Xử lý action: $action")
         when (action) {
@@ -31,8 +32,8 @@ class UserService {
                         Log.d(TAG, "Ánh xạ kỹ thuật viên: id=${dto.technician_id}, name=${dto.full_name}")
                         TopTechnician(
                             id = dto.technician_id,
-                            name = dto.full_name ?: "Kỹ thuật viên không xác định", 
-                            avatarUrl = dto.avatar_url ?: "", // Giá trị mặc định
+                            name = dto.full_name ?: "Unknown",
+                            avatarUrl = dto.avatar_url ?: "",
                             serviceName = dto.service_name,
                             price = dto.service_price,
                             rating = dto.service_rating,
@@ -55,4 +56,5 @@ class UserService {
             }
         }
     }
+
 }

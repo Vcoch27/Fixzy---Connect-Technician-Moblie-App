@@ -21,7 +21,7 @@ android {
     buildTypes {
         getByName("debug") {
             //wifi
-            buildConfigField("String", "BASE_URL", "\"http://192.168.1.9:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.4:3000/\"")
 //            buildConfigField("String", "BASE_URL", "\"http://10.23.13.51:3000/\"")
         }
         getByName("release") {

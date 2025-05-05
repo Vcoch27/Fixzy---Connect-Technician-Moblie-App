@@ -3,6 +3,7 @@ package com.example.fixzy_ketnoikythuatvien.service
 
 import android.util.Log
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
+import com.example.fixzy_ketnoikythuatvien.data.model.UserDataResponse
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.google.firebase.auth.FirebaseAuth
@@ -12,6 +13,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import okhttp3.ResponseBody
+import org.json.JSONObject
 
 class AuthService {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -20,8 +22,87 @@ class AuthService {
     private val TAG = "AUTH_SERVICE"
 
     private val apiService = ApiClient.apiService
+    private var isFetchingUserData = false
 
 
+    fun getUserData() {
+        if (isFetchingUserData) {
+            Log.d(TAG, "Skipping duplicate getUserData call")
+            return
+        }
+        isFetchingUserData = true
+
+        val firebaseUid = auth.currentUser?.uid
+        if (firebaseUid.isNullOrEmpty()) {
+            Log.e(TAG, "No Firebase UID found")
+            store.dispatch(Action.FetchUserDataFailure("Không tìm thấy Firebase UID"))
+            isFetchingUserData = false
+            return
+        }
+
+        Log.e(TAG, "Fetching user data for UID: $firebaseUid")
+        store.dispatch(Action.FetchUserDataStart(firebaseUid))
+        Log.d(TAG, "Dispatch FetchUserDataStart completed")
+
+        apiService.getUserData(firebaseUid).enqueue(object : Callback<UserDataResponse> {
+            override fun onResponse(call: Call<UserDataResponse>, response: Response<UserDataResponse>) {
+                isFetchingUserData = false
+                Log.d(TAG, "GetUserData response received with code: ${response.code()}")
+
+                try {
+                    val userDataResponse = response.body()
+                    Log.d(TAG, "Response body: $userDataResponse")
+
+                    val rawJson = if (response.isSuccessful && userDataResponse != null) {
+                        com.google.gson.Gson().toJson(userDataResponse)
+                    } else {
+                        response.errorBody()?.string() ?: "No error body available"
+                    }
+
+                    if (response.isSuccessful) {
+                        if (userDataResponse?.success == true && userDataResponse.user != null) {
+                            // Validate role safely
+                            Log.d(TAG, "Checking role: ${userDataResponse.user.role}")
+                            val validRoles = setOf("user", "technician")
+                            val role = userDataResponse.user.role
+                            if (role == null || role !in validRoles) {
+                                Log.e(TAG, "Invalid or null role: $role")
+                                store.dispatch(Action.FetchUserDataFailure("Vai trò không hợp lệ hoặc rỗng"))
+                                return
+                            }
+
+                            val userData = userDataResponse.toUserData()
+                            Log.d(TAG, "Dispatching FetchUserDataSuccess with UserData: $userData")
+                            store.dispatch(Action.FetchUserDataSuccess(userData))
+                            Log.d(TAG, "Dispatch FetchUserDataSuccess completed")
+                        } else {
+                            Log.w(TAG, "Response success=false or user null")
+                            store.dispatch(Action.FetchUserDataFailure("Dữ liệu người dùng trống"))
+                        }
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e(TAG, "Error body: $errorBody")
+                        val errorMessage = try {
+                            val errorJson = JSONObject(errorBody ?: "{}")
+                            errorJson.getString("message") ?: "Lỗi: ${response.code()}"
+                        } catch (e: Exception) {
+                            "Lỗi khi lấy dữ liệu: ${response.code()}"
+                        }
+                        store.dispatch(Action.FetchUserDataFailure(errorMessage))
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Crash in onResponse: ${e.message}", e)
+                    store.dispatch(Action.FetchUserDataFailure("Lỗi xử lý dữ liệu: ${e.message ?: "Lỗi không xác định"}"))
+                }
+            }
+
+            override fun onFailure(call: Call<UserDataResponse>, t: Throwable) {
+                isFetchingUserData = false
+                Log.e(TAG, "GetUserData failed: ${t.message}", t)
+                store.dispatch(Action.FetchUserDataFailure("Lỗi kết nối: ${t.message ?: "Không thể kết nối"}"))
+            }
+        })
+    }
     fun signUp(
         email: String,
         password: String,
@@ -41,7 +122,7 @@ class AuthService {
                         val userData = UserData(
                             name = name,
                             email = email,
-                            uid = user.uid,
+                            firebase_uid = user.uid,
                             phone = phone,
                             address = null,
                             avatarUrl = null,
@@ -54,6 +135,7 @@ class AuthService {
                             .addOnSuccessListener {
                                 Log.i(TAG, "User data saved to Firestore: $userData") // Đã có
                                 syncUserWithBackend(userData, onSuccess, onError)
+                                getUserData()
                             }
                             .addOnFailureListener { e ->
                                 Log.e(TAG, "Error saving user data: ${e.message}") // Đã có
@@ -125,6 +207,7 @@ class AuthService {
                                 if (idToken != null) {
                                     // Gửi ID Token đến backend để xác minh
                                     authenticateWithBackend(idToken, onSuccess, onError)
+                                    getUserData()
                                 } else {
                                     Log.e(TAG, "ID Token is null")
                                     onError("Failed to retrieve ID Token")

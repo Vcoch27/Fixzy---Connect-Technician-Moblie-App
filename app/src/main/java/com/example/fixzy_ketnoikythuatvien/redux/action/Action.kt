@@ -3,13 +3,20 @@ package com.example.fixzy_ketnoikythuatvien.redux.action
 import com.example.fixzy_ketnoikythuatvien.data.model.CategoryData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
+import com.example.fixzy_ketnoikythuatvien.service.model.Availability
+import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
+import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 
 //định nghĩa các hành động có thể thực hiện
 sealed class Action{
     data class getTest(val test: List<TestItem>) : Action()//chứa dữ liệu từ API ---> action này sẽ được gửi đi khi API trả về dữ liệu thành công
     data class setUser(val user: UserData) : Action()
+
+    data class FetchUserDataStart(val firebaseUid: String) : Action()
+    data class FetchUserDataSuccess(val userData: UserData) : Action()
+    data class FetchUserDataFailure(val error: String) : Action()
 
     // Add actions for categories
     object FetchCategoriesRequest : Action() //dispath để yêu cầu tải danh mục
@@ -28,4 +35,30 @@ sealed class Action{
     object FetchServicesRequest : Action()
     data class FetchServicesSuccess(val services: List<Service>) : Action()
     data class FetchServicesFailure(val error: String) : Action()
+
+    object FetchProviderRequest : Action() // Action mới để yêu cầu tải provider
+    data class FetchProviderSuccess(val provider: ProviderData) : Action() // Action khi tải thành công
+    data class FetchProviderFailure(val error: String) : Action()
+
+    object FetchAvailabilityRequest : Action()
+    data class FetchAvailabilitySuccess(val availability: List<Availability>) : Action()
+    data class FetchAvailabilityFailure(val error: String) : Action()
+    data class SelectService(val service: ServiceDetail?) : Action()
+
+    data class UpdateBooking(
+        val userId: Int? = null,
+        val serviceId: Int? = null,
+        val availabilityId: Int? = null,
+        val date: String? = null,
+        val startTime: String? = null,
+        val address: String? = null,
+        val phone: String? = null,
+        val notes: String? = null,
+        val totalPrice: Double? = null,
+        val status: String? = null
+    ) : Action()
+    data class DateForBooking(val date: String) : Action()
+    object CreateBooking : Action()
+    data class CreateBookingSuccess(val referenceCode: String) : Action()
+    data class CreateBookingFailure(val error: String) : Action()
 }

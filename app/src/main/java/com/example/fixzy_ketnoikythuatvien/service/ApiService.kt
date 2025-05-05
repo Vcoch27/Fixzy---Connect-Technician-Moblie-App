@@ -4,7 +4,12 @@ import android.util.Log
 import com.example.fixzy_ketnoikythuatvien.BuildConfig
 import com.example.fixzy_ketnoikythuatvien.data.model.SyncUserRequest
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
+import com.example.fixzy_ketnoikythuatvien.data.model.UserDataResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.Availability
+import com.example.fixzy_ketnoikythuatvien.service.model.AvailabilityResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.CategoryResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnicianResponse
@@ -16,6 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -35,6 +41,9 @@ object ApiClient {
 
 
 interface ApiService {
+    @GET("user/{userID}")
+    fun getUserData(@Path("userID") firebase_uid: String): Call<UserDataResponse>
+
     @POST("user/sync-user")
     fun syncUser(@Body userData: UserData): Call<ResponseBody>
 
@@ -55,4 +64,18 @@ interface ApiService {
 
     @GET("service/category/{categoryId}")
     suspend fun getServicesByCategory(@Path("categoryId") categoryId: Int): ServiceResponse
+
+    @GET("user/provider/{providerId}")
+    suspend fun getProviderDetails(@Path("providerId") providerId: Int): Response<ProviderResponse>
+
+    @GET("/service/{serviceId}/availability")
+    suspend fun getAvailability(@Path("serviceId") serviceId: Int): Response<AvailabilityResponse>
+
+    @POST("booking")
+    @Headers("Content-Type: application/json")
+    fun createBooking(
+        @Header("Authorization") token: String,
+        @Body body: Map<String, Any>
+    ): Call<CreateBookingResponse>
+
 }
