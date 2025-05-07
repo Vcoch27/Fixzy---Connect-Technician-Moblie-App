@@ -20,12 +20,12 @@ data class UserDataResponse(
 ) {
     data class UserDataRaw(
         @SerializedName("id") val id: Int? = null,
-        @SerializedName("full_name") val fullName: String? = null,
+        @SerializedName("fullName") val fullName: String? = null,
         @SerializedName("email") val email: String?,
         @SerializedName("firebase_uid") val firebaseUid: String? = null,
         @SerializedName("phone") val phone: String? = null,
         @SerializedName("address") val address: String? = null,
-        @SerializedName("avatar_url") val avatarUrl: String? = null,
+        @SerializedName("avatarUrl") val avatarUrl: String? = null,
         @SerializedName("role") val role: String? = "user"
     )
 

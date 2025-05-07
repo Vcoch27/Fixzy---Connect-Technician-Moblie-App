@@ -14,9 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 
 @Composable
-fun ProfileOptionList(onLogout: () -> Unit) {
+fun ProfileOptionList(
+    onLogout: () -> Unit,
+    onEditProfile: () -> Unit,
+    state: AppState
+) {
     val options = listOf(
         ProfileOption("Edit Profile", Icons.Default.Edit),
         ProfileOption("Notification", Icons.Default.Notifications),
@@ -32,10 +37,18 @@ fun ProfileOptionList(onLogout: () -> Unit) {
                 onOptionClick = {
                     when (option.title) {
                         "Logout" -> onLogout()
-                        "Edit Profile" -> { /* Handle edit profile */ }
-                        "Notification" -> { /* Handle notification */ }
-                        "Payment method" -> { /* Handle payment */ }
-                        "Help & support" -> { /* Handle help */ }
+                        "Edit Profile" -> {
+                            onEditProfile()
+                        }
+
+                        "Notification" -> { /* Handle notification */
+                        }
+
+                        "Payment method" -> { /* Handle payment */
+                        }
+
+                        "Help & support" -> { /* Handle help */
+                        }
                     }
                 }
             )

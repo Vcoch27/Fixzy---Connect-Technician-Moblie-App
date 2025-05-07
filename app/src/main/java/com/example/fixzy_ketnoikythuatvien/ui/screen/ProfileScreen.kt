@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.ui.components.profileComponents.ProfileHeader
 import com.example.fixzy_ketnoikythuatvien.ui.components.profileComponents.ProfileOptionList
 import com.example.fixzy_ketnoikythuatvien.ui.components.publicComponents.TopBar
@@ -25,6 +28,7 @@ fun ProfileScreen(
     navController: NavController,
     onLogout: () -> Unit,
 ) {
+    val state by Store.stateFlow.collectAsState()
     val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
     Column(
@@ -49,14 +53,18 @@ fun ProfileScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ProfileHeader()
+                ProfileHeader(state = state)
                 Spacer(modifier = Modifier.height(16.dp))
                 ProfileOptionList(
                     onLogout = {
                         auth.signOut()
                         onLogout()
                         Toast.makeText(context,"Logged out successfully", Toast.LENGTH_SHORT).show()
-                    }
+                    },
+                    onEditProfile ={
+                        navController.navigate("edit_profile_screen")
+                    },
+                    state = state
                 )
             }
 

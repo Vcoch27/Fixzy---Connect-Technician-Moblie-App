@@ -72,4 +72,10 @@ sealed class Action{
     data class UpdateBookingStatusSuccess(val message: String) : Action()
     data class UpdateBookingStatusFailure(val error: String) : Action()
 
+    data class UpdateUserProfileAction(val user: UserData) : Action()
+
+    data class UpdateProfileSuccess(val user: UserData) : Action()
+    data class UpdateProfileFailure(val error: String) : Action()
+    object UpdateProfileLoading : Action()
+
 }

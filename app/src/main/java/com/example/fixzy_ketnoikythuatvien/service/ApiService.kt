@@ -12,6 +12,9 @@ import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnicianResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.UpdateProfileRequest
+import com.example.fixzy_ketnoikythuatvien.service.model.UpdateProfileResponse
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
@@ -25,14 +28,23 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
+import java.util.concurrent.TimeUnit
 
-data class TestItem(val id: Int, val count: Int) // Match your DB columns
+data class TestItem(val id: Int, val count: Int)
 
-
+//BuildConfig.BASE_URL
+val URL = "192.168.1.10:3000"
 object ApiClient {
     val apiService: ApiService by lazy {
+        val okHttpClient = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .build()
+
         Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
@@ -88,4 +100,10 @@ interface ApiService {
     ): Response<StatusUpdateResponse>
     data class StatusUpdateRequest(val status: String,val user_id: Int,val role: String)
     data class StatusUpdateResponse(val success: Boolean, val message: String)
+
+    @PUT("user/update")
+    suspend fun updateUserProfile(
+        @Body request: UpdateProfileRequest
+    ): Response<UpdateProfileResponse>
+
 }

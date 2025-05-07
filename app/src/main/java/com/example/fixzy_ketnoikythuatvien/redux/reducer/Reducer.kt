@@ -216,6 +216,21 @@ class Reducer {
                     updateBookingStatusError = action.error,
                     updateBookingStatusMessage = null
                 )
+                is Action.UpdateProfileLoading -> {
+                    state.copy(isLoading = true)
+                }
+                is Action.UpdateProfileSuccess -> {
+                    state.copy(
+                        isLoading = false,
+                        user = action.user
+                    )
+                }
+                is Action.UpdateProfileFailure -> {
+                    state.copy(
+                        isLoading = false,
+                        error = action.error
+                    )
+                }
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")
                     state

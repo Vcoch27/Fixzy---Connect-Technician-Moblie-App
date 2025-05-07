@@ -60,19 +60,19 @@ fun ProfileOptionItem(
                 Text(text = option.title, fontSize = 16.sp)
             }
 
-            Box(
-                modifier = Modifier
-                    .size(35.dp)
-                    .clip(RoundedCornerShape(6.dp)) // Làm bo tròn góc
-                    .background(AppTheme.colors.mainColor)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Arrow",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp).align(Alignment.Center)
-                )
-            }
+//            Box(
+//                modifier = Modifier
+//                    .size(35.dp)
+//                    .clip(RoundedCornerShape(6.dp)) // Làm bo tròn góc
+//                    .background(AppTheme.colors.mainColor)
+//            ) {
+//                Icon(
+//                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+//                    contentDescription = "Arrow",
+//                    tint = Color.White,
+//                    modifier = Modifier.size(24.dp).align(Alignment.Center)
+//                )
+//            }
 
 
         }

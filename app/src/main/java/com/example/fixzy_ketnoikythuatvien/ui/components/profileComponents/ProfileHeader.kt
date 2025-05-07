@@ -17,24 +17,26 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.example.fixzy_ketnoikythuatvien.R
+import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 
 @Composable
-fun ProfileHeader(modifier: Modifier = Modifier) {
+fun ProfileHeader(modifier: Modifier = Modifier,state: AppState) {
     Column (horizontalAlignment = Alignment.CenterHorizontally) {
         Image(
-            painter = painterResource(id = R.drawable.coc),
+            painter = rememberAsyncImagePainter(
+                model = state.user?.avatarUrl ?: R.drawable.coc
+            ),
             contentDescription = "Profile Picture",
-            modifier = Modifier
-                .size(150.dp)
-                .clip(CircleShape)
+            modifier = Modifier.size(150.dp).clip(CircleShape)
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Nguyen Van Hoang",
+            text = state.user?.name ?: "No Name",
             style = AppTheme.typography.titleMedium,
             color = AppTheme.colors.mainColor,
         )

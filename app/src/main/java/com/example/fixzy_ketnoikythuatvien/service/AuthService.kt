@@ -26,6 +26,7 @@ class AuthService {
 
 
     fun getUserData() {
+        Log.d(TAG, "-------------getUserData called-----------")
         if (isFetchingUserData) {
             Log.d(TAG, "Skipping duplicate getUserData call")
             return
@@ -61,7 +62,6 @@ class AuthService {
 
                     if (response.isSuccessful) {
                         if (userDataResponse?.success == true && userDataResponse.user != null) {
-                            // Validate role safely
                             Log.d(TAG, "Checking role: ${userDataResponse.user.role}")
                             val validRoles = setOf("user", "technician")
                             val role = userDataResponse.user.role
@@ -70,7 +70,6 @@ class AuthService {
                                 store.dispatch(Action.FetchUserDataFailure("Vai trò không hợp lệ hoặc rỗng"))
                                 return
                             }
-
                             val userData = userDataResponse.toUserData()
                             Log.d(TAG, "Dispatching FetchUserDataSuccess with UserData: $userData")
                             store.dispatch(Action.FetchUserDataSuccess(userData))
@@ -227,7 +226,6 @@ class AuthService {
                 }
             }
     }
-    // Gửi ID Token đến backend để xác minh
     fun authenticateWithBackend(
         idToken: String,
         onSuccess: (UserData) -> Unit,
@@ -241,11 +239,10 @@ class AuthService {
                     val userData = response.body()
                     if (userData != null) {
                         Log.i(TAG, "User data from backend: $userData")
-                        // Đồng bộ với backend (gọi /sync-user)
                         syncUserWithBackend(
                             userData,
                             onSuccess = {
-                                onSuccess(userData) // ✅ Truyền lại UserData sau khi đồng bộ
+                                onSuccess(userData)
                             },
                             onError = onError
                         )

@@ -21,11 +21,10 @@ android {
     buildTypes {
         getByName("debug") {
             //wifi
-            buildConfigField("String", "BASE_URL", "\"http://192.168.1.5:3000/\"")
-//            buildConfigField("String", "BASE_URL", "\"http://10.23.13.51:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.10:3000/\"")
         }
         getByName("release") {
-            buildConfigField("String", "BASE_URL", "\"https://192.168.1.27:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"https://192.168.1.8:3000/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -90,4 +89,6 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation ("org.reduxkotlin:redux-kotlin-threadsafe:0.5.5")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation ("com.cloudinary:cloudinary-android:2.3.1")
 }

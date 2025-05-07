@@ -13,6 +13,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.SideEffect
 import androidx.core.view.WindowInsetsControllerCompat
+import com.cloudinary.Cloudinary
+import com.cloudinary.android.MediaManager
 import com.example.fixzy_ketnoikythuatvien.ui.navigation.AppNavigation
 import com.example.fixzy_ketnoikythuatvien.utils.NotificationHelper
 
@@ -29,7 +31,6 @@ fun HideSystemUI() {
 }
 
 class MainActivity : ComponentActivity() {
-    // Hàm kiểm tra kết nối Firebase
     private fun testFirebaseConnection() {
         val db = FirebaseDatabase.getInstance()
         val ref = db.getReference("test_connection")
@@ -43,6 +44,13 @@ class MainActivity : ComponentActivity() {
     }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        val config = mapOf(
+            "cloud_name" to "dlkrskgwq",
+            "api_key" to "249495825631952",
+            "api_secret" to "OEdRpYtD-ZpeCervTbnsHclA5QE"
+        )
+        MediaManager.init(this, config)
         super.onCreate(savedInstanceState)
         NotificationHelper.createNotificationChannel(this)
         enableEdgeToEdge()

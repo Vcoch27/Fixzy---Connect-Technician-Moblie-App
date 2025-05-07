@@ -42,6 +42,7 @@
     import com.example.fixzy_ketnoikythuatvien.ui.screen.AvailabilityScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ChatScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ConfirmBookingScreen
+    import com.example.fixzy_ketnoikythuatvien.ui.screen.EditProfileScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.NotificationScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.OrdersScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProductHomePageScreen
@@ -188,6 +189,15 @@
                         )
                     }
                 }
+
+                composable("edit_profile_screen"){
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        EditProfileScreen(
+                            navController
+                        )
+                    }
+                }
+
                 composable("test_page") {
                     val viewModel: TestViewModel = viewModel()
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
