@@ -22,6 +22,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -79,4 +80,12 @@ interface ApiService {
 
     @GET("bookings/user")
     fun getBookingsForUser(@Header("Authorization") token: String): Call<GetBookingsResponse>
+
+    @PUT("bookings/{bookingId}/status")
+    suspend fun updateBookingStatus(
+        @Path("bookingId") bookingId: Int,
+        @Body body: StatusUpdateRequest,
+    ): Response<StatusUpdateResponse>
+    data class StatusUpdateRequest(val status: String,val user_id: Int,val role: String)
+    data class StatusUpdateResponse(val success: Boolean, val message: String)
 }

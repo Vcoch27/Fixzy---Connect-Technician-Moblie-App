@@ -52,3 +52,5 @@ data class GetBookingsResponse(
     val success: Boolean,
     val data: List<DetailBooking>
 )
+
+

@@ -1,5 +1,7 @@
 package com.example.fixzy_ketnoikythuatvien.ui.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,12 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.BookingService
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
@@ -23,20 +27,27 @@ import com.example.fixzy_ketnoikythuatvien.ui.components.oderComponents.OrderIte
 import com.example.fixzy_ketnoikythuatvien.ui.components.oderComponents.OrdersTabRow
 import com.example.fixzy_ketnoikythuatvien.ui.components.publicComponents.TopBar
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun OrdersScreen(
     navController: NavController,
-     // Inject BookingService để gọi API
 ) {
-    var bookingService: BookingService = BookingService()
+    val bookingService = remember { BookingService() }
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Upcoming", "History", "Saved")
+    val state by Store.stateFlow.collectAsState()
+    val bookings = remember { mutableStateListOf<DetailBooking>() }
+
+    // Sync bookings with store state when it changes
+    LaunchedEffect(state.bookings) {
+        bookings.clear()
+        bookings.addAll(state.bookings)
+    }
+
+    // Fetch bookings on initial load
     LaunchedEffect(Unit) {
         bookingService.getBookingsForUser()
     }
-
-    val state by Store.stateFlow.collectAsState()
-
 
     Column(
         modifier = Modifier
@@ -48,9 +59,9 @@ fun OrdersScreen(
         OrdersTabRow(selectedTabIndex, tabs) { index -> selectedTabIndex = index }
 
         val filteredBookings = when (selectedTabIndex) {
-            0 -> state.bookings.filter { it.status in listOf("Pending", "Confirmed") } // Upcoming
-            1 -> state.bookings.filter { it.status in listOf("Completed", "Cancelled") } // History
-            2 -> emptyList<DetailBooking>() // Saved: Chưa xử lý
+            0 -> bookings.filter { it.status in listOf("Pending", "Confirmed") } // Upcoming
+            1 -> bookings.filter { it.status in listOf("Completed", "Cancelled") } // History
+            2 -> emptyList<DetailBooking>()
             else -> emptyList()
         }
 
@@ -58,8 +69,18 @@ fun OrdersScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filteredBookings) { booking ->
-                OrderItemCard(booking)
+            items(filteredBookings, key = { it.booking_id }) { booking ->
+                OrderItemCard(
+                    booking = booking,
+                    onBookingUpdated = { updatedBooking ->
+                        // Cập nhật cả local state và Redux store
+                        val index = bookings.indexOfFirst { it.booking_id == updatedBooking.booking_id }
+                        if (index != -1) {
+                            bookings[index] = updatedBooking
+                        }
+                        Store.store.dispatch(Action.UpdateBookingAction(updatedBooking)) // Thêm dòng này
+                    }
+                )
             }
         }
     }

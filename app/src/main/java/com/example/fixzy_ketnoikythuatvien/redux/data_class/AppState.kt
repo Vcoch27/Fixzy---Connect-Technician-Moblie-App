@@ -14,9 +14,9 @@ import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 
 //lớp chứa các model dữ liệu
 data class AppState(
-    val test: List<TestItem> = arrayListOf(),//định nghĩa trạng thái ứng dụng chứa một danh sách TestItem // mặc định rỗng
-    val user: UserData? = null,
 
+    val user: UserData? = null,
+    val test: List<TestItem> = arrayListOf(),
     val categories: List<CategoryData> = emptyList(), // Danh sách các danh mục (mặc định rỗng)
     val isLoadingCategories: Boolean = false,        // Cờ hiển thị trạng thái đang tải danh mục
     val categoriesError: String? = null,              // Lỗi (nếu có) khi tải danh mục (null nếu không lỗi)
@@ -44,5 +44,9 @@ data class AppState(
     val createBookingError: String? = null,
     val referenceCode: String? = null,
 
-    val bookings: List<DetailBooking> = emptyList()
+    val bookings: List<DetailBooking> = emptyList(),
+
+    val isUpdatingBookingStatus: Boolean = false,
+    val updateBookingStatusError: String? = null,
+    val updateBookingStatusMessage: String? = null
 )

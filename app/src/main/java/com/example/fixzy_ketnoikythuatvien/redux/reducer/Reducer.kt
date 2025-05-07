@@ -195,6 +195,27 @@ class Reducer {
                     isCreatingBooking = false,
                     createBookingError = null
                 )
+                is Action.UpdateBookingStatus -> state.copy(
+                    isUpdatingBookingStatus = true,
+                    updateBookingStatusError = null,
+                    updateBookingStatusMessage = null
+                )
+                is Action.UpdateBookingAction -> {
+                    val updatedBookings = state.bookings.map {
+                        if (it.booking_id == action.booking.booking_id) action.booking else it
+                    }
+                    state.copy(bookings = updatedBookings)
+                }
+                is Action.UpdateBookingStatusSuccess -> state.copy(
+                    isUpdatingBookingStatus = false,
+                    updateBookingStatusError = null,
+                    updateBookingStatusMessage = action.message
+                )
+                is Action.UpdateBookingStatusFailure -> state.copy(
+                    isUpdatingBookingStatus = false,
+                    updateBookingStatusError = action.error,
+                    updateBookingStatusMessage = null
+                )
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")
                     state

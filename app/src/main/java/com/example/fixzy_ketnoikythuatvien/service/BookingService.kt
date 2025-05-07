@@ -2,7 +2,10 @@ package com.example.fixzy_ketnoikythuatvien.service
 
 import retrofit2.Call
 import android.util.Log
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
+import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingRequest
@@ -12,7 +15,10 @@ import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import retrofit2.Response
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.gson.Gson
 import retrofit2.Callback
+import retrofit2.HttpException
+import java.io.IOException
 
 private const val TAG = "BOOKING_SERVICE"
 
@@ -20,7 +26,6 @@ class BookingService {
     private val apiService = ApiClient.apiService
     private val store = Store.store
     private val firebaseAuth = Firebase.auth
-
     fun createBooking(
         serviceId: Int?,
         availabilityId: Int?,
@@ -150,5 +155,99 @@ class BookingService {
             store.dispatch(Action.FetchBookingsFailure(errorMessage))
         }
     }
+
+    suspend fun updateBookingStatus(bookingId: Int, status: String)  :Boolean {
+        store.dispatch(Action.UpdateBookingStatus)
+        Log.d(TAG, "Updating booking status for bookingId=$bookingId, status=$status")
+
+        try {
+            // Kiểm tra giá trị đầu vào
+            if (bookingId <= 0) {
+                Log.e(TAG, "Invalid bookingId: $bookingId")
+                store.dispatch(Action.UpdateBookingStatusFailure("ID đặt lịch không hợp lệ."))
+                return false
+            }
+
+            val validStatuses = listOf("Pending", "Confirmed", "Completed", "Cancelled")
+            if (status !in validStatuses) {
+                Log.e(TAG, "Invalid status: $status")
+                store.dispatch(Action.UpdateBookingStatusFailure("Trạng thái không hợp lệ. Các trạng thái hợp lệ: ${validStatuses.joinToString(", ")}."))
+                return false
+            }
+
+            val state = store.getState()
+            val user = state.user
+            if (user == null) {
+                Log.e(TAG, "User not logged in")
+                store.dispatch(Action.UpdateBookingStatusFailure("Vui lòng đăng nhập để cập nhật trạng thái."))
+                return false
+            }
+
+            val userId = user.id
+            val role = user.role
+            if (userId == null || role == null) {
+                Log.e(TAG, "Invalid user data: userId=$userId, role=$role")
+                store.dispatch(Action.UpdateBookingStatusFailure("Thông tin người dùng không hợp lệ."))
+                return false
+            }
+
+            Log.d(TAG, "Sending request with userId=$userId, role=$role, bookingId=$bookingId, status=$status")
+            val response = apiService.updateBookingStatus(
+                bookingId,
+                ApiService.StatusUpdateRequest(status,userId,role),
+            )
+
+            Log.d(TAG, "API response: status=${response.code()}, body=${response.body()?.toString()}")
+
+            if (response.isSuccessful && response.body()?.success == true) {
+                val message = response.body()?.message ?: "Cập nhật trạng thái thành công."
+                Log.d(TAG, "Booking status updated successfully: $message")
+                store.dispatch(Action.UpdateBookingStatusSuccess(message))
+                return true
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = try {
+                    val errorResponse = Gson().fromJson(errorBody, ApiService.StatusUpdateResponse::class.java)
+                    when (response.code()) {
+                        400 -> errorResponse.message ?: "Yêu cầu không hợp lệ."
+                        401 -> errorResponse.message ?: "Không xác thực được người dùng."
+                        403 -> errorResponse.message ?: "Bạn không có quyền thực hiện hành động này."
+                        else -> errorResponse.message ?: "Lỗi server khi cập nhật trạng thái."
+                    }
+                } catch (e: Exception) {
+                    errorBody ?: "Lỗi server khi cập nhật trạng thái."
+                }
+                Log.e(TAG, "Failed to update booking status: HTTP ${response.code()}, message=$errorMessage")
+                store.dispatch(Action.UpdateBookingStatusFailure(errorMessage))
+                return false
+            }
+        } catch (e: HttpException) {
+            val errorBody = e.response()?.errorBody()?.string()
+            val errorMessage = try {
+                val errorResponse = Gson().fromJson(errorBody, ApiService.StatusUpdateResponse::class.java)
+                when (e.code()) {
+                    400 -> errorResponse.message ?: "Yêu cầu không hợp lệ."
+                    401 -> errorResponse.message ?: "Không xác thực được người dùng."
+                    403 -> errorResponse.message ?: "Bạn không có quyền thực hiện hành động này."
+                    else -> errorResponse.message ?: "Lỗi server khi cập nhật trạng thái."
+                }
+            } catch (ex: Exception) {
+                errorBody ?: "Lỗi server khi cập nhật trạng thái."
+            }
+            Log.e(TAG, "HTTP error updating booking status: $errorMessage", e)
+            store.dispatch(Action.UpdateBookingStatusFailure(errorMessage))
+            return false
+        } catch (e: IOException) {
+            Log.e(TAG, "Network error updating booking status", e)
+            store.dispatch(Action.UpdateBookingStatusFailure("Lỗi kết nối mạng. Vui lòng kiểm tra lại."))
+            return false
+        } catch (e: Exception) {
+            Log.e(TAG, "Unexpected error updating booking status", e)
+            store.dispatch(Action.UpdateBookingStatusFailure("Đã xảy ra lỗi không xác định: ${e.message}"))
+            return false
+        }
+    }
+
+
 }
 

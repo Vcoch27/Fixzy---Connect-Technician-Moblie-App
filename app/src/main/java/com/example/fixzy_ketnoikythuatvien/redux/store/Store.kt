@@ -20,8 +20,8 @@ class Store {
         val store: ReduxStore<AppState> = reduxStore.apply {
             subscribe {
                 val newState = getState()
-                Log.d(TAG, "Trạng thái Redux thay đổi: số kỹ thuật viên=${newState.topTechnicians.size}, số danh mục=${newState.categories.size}, chi tiết kỹ thuật viên=${newState.topTechnicians.map { it.name }}")
                 _stateFlow.value = newState
+
             }
         }
     }

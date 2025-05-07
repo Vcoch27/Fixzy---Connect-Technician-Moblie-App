@@ -1,5 +1,8 @@
 package com.example.fixzy_ketnoikythuatvien.ui.components.oderComponents
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +25,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -29,7 +33,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,13 +49,45 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderData
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderStatus
+import com.example.fixzy_ketnoikythuatvien.redux.store.Store
+import com.example.fixzy_ketnoikythuatvien.service.BookingService
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import com.example.fixzy_ketnoikythuatvien.ui.theme.LocalAppTypography
+import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.LocalDateTime
 
-
+val TAG = "OrderItemCard"
 @Composable
-fun OrderItemCard(booking: DetailBooking) {
+@RequiresApi(Build.VERSION_CODES.O)
+fun OrderItemCard(booking: DetailBooking,
+                  onBookingUpdated: (DetailBooking) -> Unit) {
+    val scope = rememberCoroutineScope()
+    val store = Store.store // Assuming Store is accessible
+    val state by Store.stateFlow.collectAsState()// Collect AppState as Compose state
+    val bookingService = remember { BookingService() }
+
+    var isCancelLoading by remember { mutableStateOf(false) }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    Log.d("OrderItemCard", "Rendering OrderItemCard for booking: ${booking.reference_code}")
+    val currentTime = LocalDateTime.now()
+    Log.d("OrderItemCard", "Current time: $currentTime")
+    val bookingDateTime = try {
+        LocalDateTime.parse("${booking.booking_date}T${booking.booking_time}")
+    } catch (e: Exception) {
+        Log.e(
+            "OrderItemCard",
+            "Failed to parse booking date/time: ${booking.booking_date} ${booking.booking_time}",
+            e
+        )
+        LocalDateTime.now()
+    }
+    val hoursUntilCancellation =
+        Duration.between(currentTime, bookingDateTime.plusHours(6)).toHours()
+    Log.d("OrderItemCard", "Hours until cancellation: $hoursUntilCancellation")
+
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier.fillMaxWidth(),
@@ -64,13 +107,14 @@ fun OrderItemCard(booking: DetailBooking) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
+                    Log.d("OrderItemCard", "Service name: ${booking.service_name}")
                     Text(
-                        text = booking.service_name,
+                        text = booking.service_name ?: "Unknown Service",
                         style = AppTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Reference Code: #${booking.reference_code}",
+                        text = "Reference Code: #${booking.reference_code ?: "N/A"}",
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.onBackgroundVariant
                     )
@@ -84,7 +128,6 @@ fun OrderItemCard(booking: DetailBooking) {
                     .align(Alignment.CenterHorizontally)
             )
 
-            // Trạng thái đơn hàng
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -99,10 +142,10 @@ fun OrderItemCard(booking: DetailBooking) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = booking.status,
+                    text = booking.status ?: "Unknown",
                     style = LocalAppTypography.current.bodySmall,
                     color = when (booking.status) {
-                        "Pending" -> Color(0xFF6200EE)
+                        "Pending" -> AppTheme.colors.onActionSurface
                         "Confirmed" -> AppTheme.colors.onBackgroundVariant
                         "Completed" -> AppTheme.colors.mainColor
                         "Cancelled" -> Color.Red
@@ -135,21 +178,59 @@ fun OrderItemCard(booking: DetailBooking) {
             // Lịch hẹn
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 8.dp, bottom = 8.dp)
+                modifier = Modifier.padding(
+                    start = 10.dp,
+                    end = 10.dp,
+                    top = 8.dp,
+                    bottom = 8.dp
+                )
             ) {
                 Box(
                     modifier = Modifier
                         .size(50.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFD5D5D5)),
+                        .background(
+                            if (booking.status == "Confirmed") Color(0xFFFFE0B2) else Color(
+                                0xFFD5D5D5
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(imageVector = Icons.Default.CalendarToday, contentDescription = "Schedule")
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "Schedule",
+                        tint = if (booking.status == "Confirmed") AppTheme.colors.mainColor else Color.Black
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
-                    val schedule = "${booking.booking_time.substring(0, 5)} ${booking.booking_date.substring(8, 10)} ${monthFromNumber(booking.booking_date.substring(5, 7))}"
-                    Text(text = schedule, style = LocalAppTypography.current.body)
+                    val schedule = try {
+                        "${
+                            booking.booking_time.substring(
+                                0,
+                                5
+                            )
+                        } ${
+                            booking.booking_date.substring(
+                                8,
+                                10
+                            )
+                        } ${monthFromNumber(booking.booking_date.substring(5, 7))}"
+                    } catch (e: Exception) {
+                        Log.e(
+                            "OrderItemCard",
+                            "Failed to format schedule: ${booking.booking_date} ${booking.booking_time}",
+                            e
+                        )
+                        "Invalid Schedule"
+                    }
+                    Log.d("OrderItemCard", "Schedule: $schedule")
+                    Text(
+                        text = schedule,
+                        style = LocalAppTypography.current.body,
+                        fontWeight = if (booking.status == "Confirmed") FontWeight.Bold else FontWeight.Normal,
+                        color = if (booking.status == "Confirmed") AppTheme.colors.mainColor else Color.Black
+                    )
                     Text(
                         text = "Schedule",
                         style = LocalAppTypography.current.bodySmall,
@@ -157,9 +238,36 @@ fun OrderItemCard(booking: DetailBooking) {
                     )
                 }
             }
+
+            // Ghi chú theo trạng thái
+            when (booking.status) {
+                "Pending" -> {
+                    Log.d(
+                        "OrderItemCard",
+                        "Pending note: Auto-cancel in $hoursUntilCancellation hours"
+                    )
+                    Text(
+                        text = "Booking will auto-cancel in $hoursUntilCancellation hours if not confirmed by provider.",
+                        style = LocalAppTypography.current.bodySmall,
+                        color = AppTheme.colors.onActionSurface,
+                        modifier = Modifier.padding(start = 10.dp, top = 8.dp)
+                    )
+                }
+
+                "Cancelled" -> {
+                    Log.d("OrderItemCard", "Cancellation reason:")
+                    Text(
+                        text = "Reason for cancellation: ${true ?: "Not specified"}",
+                        style = LocalAppTypography.current.bodySmall,
+                        color = Color.Red,
+                        modifier = Modifier.padding(start = 10.dp, top = 8.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
 
             // Nút hành động theo trạng thái
+            Log.d("OrderItemCard", "Rendering action buttons for status: ${booking.status}")
             when (booking.status) {
                 "Pending" -> {
                     Row(
@@ -170,7 +278,7 @@ fun OrderItemCard(booking: DetailBooking) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { /* Gọi */ },
+                            onClick = { Log.d("OrderItemCard", "Call button clicked") },
                             colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colors.mainColor),
                             modifier = Modifier
                                 .weight(1f)
@@ -194,33 +302,14 @@ fun OrderItemCard(booking: DetailBooking) {
                                 )
                             }
                         }
+
                         OutlinedButton(
-                            onClick = { /* Chat */ },
-                            border = BorderStroke(1.dp, AppTheme.colors.mainColor),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(40.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.Chat,
-                                    contentDescription = "Chat",
-                                    tint = AppTheme.colors.mainColor,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Chat",
-                                    color = AppTheme.colors.mainColor,
-                                    style = LocalAppTypography.current.bodySmall
-                                )
-                            }
-                        }
-                        OutlinedButton(
-                            onClick = { /* Hủy */ },
+                            onClick = {
+                                Log.d(TAG, "Cancel button clicked for bookingId=${booking.booking_id}")
+                                scope.launch {
+                                    showConfirmDialog = true
+                                }
+                            },
                             border = BorderStroke(1.dp, Color.Red),
                             modifier = Modifier
                                 .weight(1f)
@@ -237,8 +326,33 @@ fun OrderItemCard(booking: DetailBooking) {
                                 )
                             }
                         }
+                        if (showConfirmDialog) {
+                            ConfirmDialog(
+                                onConfirm = {
+                                    scope.launch {
+                                        isCancelLoading = true
+                                        try {
+                                            // Gọi API và xử lý kết quả
+                                            val success = bookingService.updateBookingStatus(booking.booking_id, "Cancelled")
+                                            if (success) {
+                                                val updatedBooking = booking.copy(status = "Cancelled")
+                                                onBookingUpdated(updatedBooking)
+                                            }
+                                        } catch (e: Exception) {
+                                            Log.e(TAG, "Failed to cancel booking", e)
+                                            // Có thể hiển thị thông báo lỗi ở đây
+                                        } finally {
+                                            isCancelLoading = false
+                                            showConfirmDialog = false
+                                        }
+                                    }
+                                },
+                                onDismiss = { showConfirmDialog = false }
+                            )
+                        }
                     }
                 }
+
                 "Confirmed" -> {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -248,7 +362,7 @@ fun OrderItemCard(booking: DetailBooking) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { /* Gọi */ },
+                            onClick = { Log.d("OrderItemCard", "Call button clicked") },
                             colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colors.mainColor),
                             modifier = Modifier
                                 .weight(1f)
@@ -273,7 +387,7 @@ fun OrderItemCard(booking: DetailBooking) {
                             }
                         }
                         OutlinedButton(
-                            onClick = { /* Chat */ },
+                            onClick = { Log.d("OrderItemCard", "Chat button clicked") },
                             border = BorderStroke(1.dp, AppTheme.colors.mainColor),
                             modifier = Modifier
                                 .weight(1f)
@@ -299,6 +413,7 @@ fun OrderItemCard(booking: DetailBooking) {
                         }
                     }
                 }
+
                 "Completed", "Cancelled" -> {
                     Row(
                         modifier = Modifier
@@ -307,7 +422,7 @@ fun OrderItemCard(booking: DetailBooking) {
                         horizontalArrangement = Arrangement.End
                     ) {
                         OutlinedButton(
-                            onClick = { /* Thông tin đơn hàng */ },
+                            onClick = { Log.d("OrderItemCard", "Info button clicked") },
                             border = BorderStroke(1.dp, AppTheme.colors.mainColor),
                             modifier = Modifier
                                 .width(180.dp)
@@ -336,6 +451,7 @@ fun OrderItemCard(booking: DetailBooking) {
             }
         }
     }
+
 }
 
 // Hàm helper để chuyển đổi số tháng thành tên tháng viết tắt
@@ -355,4 +471,25 @@ private fun monthFromNumber(month: String): String {
         "12" -> "Dec"
         else -> ""
     }
+}
+@Composable
+fun ConfirmDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Xác nhận hủy") },
+        text = { Text("Bạn có chắc chắn muốn hủy booking này?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Hủy", color = Color.Red)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Thoát")
+            }
+        }
+    )
 }

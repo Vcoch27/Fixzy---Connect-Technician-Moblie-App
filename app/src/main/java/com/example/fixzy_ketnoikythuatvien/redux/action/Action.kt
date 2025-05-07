@@ -67,5 +67,9 @@ sealed class Action{
     data class CreateBookingFailure(val error: String) : Action()
     object ResetBookingState : Action()
 
+    object UpdateBookingStatus : Action()
+    data class UpdateBookingAction(val booking: DetailBooking) : Action()
+    data class UpdateBookingStatusSuccess(val message: String) : Action()
+    data class UpdateBookingStatusFailure(val error: String) : Action()
 
 }
