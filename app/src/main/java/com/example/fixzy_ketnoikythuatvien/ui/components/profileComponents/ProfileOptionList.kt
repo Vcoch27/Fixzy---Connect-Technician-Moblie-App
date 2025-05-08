@@ -20,13 +20,14 @@ import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 fun ProfileOptionList(
     onLogout: () -> Unit,
     onEditProfile: () -> Unit,
+    onProviderMode: () -> Unit,
     state: AppState
 ) {
     val options = listOf(
         ProfileOption("Edit Profile", Icons.Default.Edit),
         ProfileOption("Notification", Icons.Default.Notifications),
         ProfileOption("Payment method", Icons.Default.CreditCard),
-        ProfileOption("Help & support", Icons.AutoMirrored.Filled.Help),
+        ProfileOption("Provider mode", Icons.AutoMirrored.Filled.Help),
         ProfileOption("Logout", Icons.AutoMirrored.Filled.Logout)
     )
 
@@ -47,7 +48,7 @@ fun ProfileOptionList(
                         "Payment method" -> { /* Handle payment */
                         }
 
-                        "Help & support" -> { /* Handle help */
+                        "Provider mode" -> { onProviderMode()
                         }
                     }
                 }

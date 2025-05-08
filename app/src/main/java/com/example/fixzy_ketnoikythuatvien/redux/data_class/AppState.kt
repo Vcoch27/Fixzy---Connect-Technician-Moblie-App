@@ -8,6 +8,7 @@ import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
+import com.example.fixzy_ketnoikythuatvien.service.model.Registration
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
@@ -48,5 +49,10 @@ data class AppState(
 
     val isUpdatingBookingStatus: Boolean = false,
     val updateBookingStatusError: String? = null,
-    val updateBookingStatusMessage: String? = null
-)
+    val updateBookingStatusMessage: String? = null,
+
+    val isGetRegistration: Boolean = false,
+    val getRegistrationError: String? = null,
+    val registration: Registration? = null,
+
+    )

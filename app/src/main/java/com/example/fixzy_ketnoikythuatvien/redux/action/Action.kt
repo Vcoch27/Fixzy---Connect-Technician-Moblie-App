@@ -6,6 +6,7 @@ import com.example.fixzy_ketnoikythuatvien.service.TestItem
 import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
+import com.example.fixzy_ketnoikythuatvien.service.model.Registration
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
@@ -77,5 +78,13 @@ sealed class Action{
     data class UpdateProfileSuccess(val user: UserData) : Action()
     data class UpdateProfileFailure(val error: String) : Action()
     object UpdateProfileLoading : Action()
+
+    data class  RegisterProviderSuccess (val message: String) : Action()
+    data class  RegisterProviderFailure (val error: String) : Action()
+    object  RegisterProviderLoading : Action()
+
+    data class GetRegistrationSuccess(val registration: Registration) : Action()
+    data class GetRegistrationFailure(val error: String) : Action()
+    object GetRegistrationStatusLoading : Action()
 
 }

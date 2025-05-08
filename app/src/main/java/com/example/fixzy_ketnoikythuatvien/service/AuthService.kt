@@ -2,6 +2,10 @@
 package com.example.fixzy_ketnoikythuatvien.service
 
 import android.util.Log
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserDataResponse
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
@@ -23,7 +27,7 @@ class AuthService {
 
     private val apiService = ApiClient.apiService
     private var isFetchingUserData = false
-
+    val providerService =  ProviderService()
 
     fun getUserData() {
         Log.d(TAG, "-------------getUserData called-----------")

@@ -5,9 +5,17 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
+import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
+import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderRequest
+import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.RegistrationResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.awaitResponse
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -120,5 +128,73 @@ class ProviderService {
 
         Log.i(TAG, "end fetchAvailability ")
     }
+
+    fun registerProvider(userId: Int, yearsOfExperience: Int, bio: String, certificateUrl: String) {
+        store.dispatch(Action.RegisterProviderLoading)
+
+        val request = RegisterProviderRequest(
+            userId = userId,
+            yearsOfExperience = yearsOfExperience,
+            bio = bio,
+            certificateUrl = certificateUrl
+        )
+
+        apiService.registerProvider(request).enqueue(object : Callback<RegisterProviderResponse> {
+            override fun onResponse(
+                call: Call<RegisterProviderResponse>,
+                response: Response<RegisterProviderResponse>
+            ) {
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    if (body.success) {
+                        store.dispatch(Action.RegisterProviderSuccess(body.message))
+                    } else {
+                        store.dispatch(Action.RegisterProviderFailure(body.message))
+                    }
+                } else {
+                    store.dispatch(Action.RegisterProviderFailure("Failed to register provider"))
+                }
+            }
+
+            override fun onFailure(call: Call<RegisterProviderResponse>, t: Throwable) {
+                Log.e(TAG, "registerProvider failed: ${t.message}", t)
+                store.dispatch(Action.RegisterProviderFailure(t.message ?: "Unknown error"))
+            }
+        })
+    }
+
+
+    fun getRegistration(userId: Int?) {
+        if (userId == null) {
+            store.dispatch(Action.GetRegistrationFailure("User ID is null"))
+            return
+        }
+
+        Log.d(TAG, "Fetching registration for userId: $userId")
+
+        apiService.getRegistration(userId).enqueue(object : Callback<RegistrationResponse> {
+            override fun onResponse(
+                call: Call<RegistrationResponse>,
+                response: Response<RegistrationResponse>
+            ) {
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    if (body.success && body.data != null) {
+                        store.dispatch(Action.GetRegistrationSuccess(body.data))
+                    } else {
+                        store.dispatch(Action.GetRegistrationFailure(body.error ?: "Unknown error"))
+                    }
+                } else {
+                    store.dispatch(Action.GetRegistrationFailure("Failed to fetch registration"))
+                }
+            }
+
+            override fun onFailure(call: Call<RegistrationResponse>, t: Throwable) {
+                Log.e(TAG, "getRegistration failed: ${t.message}", t)
+                store.dispatch(Action.GetRegistrationFailure(t.message ?: "Unknown error"))
+            }
+        })
+    }
+
 }
 

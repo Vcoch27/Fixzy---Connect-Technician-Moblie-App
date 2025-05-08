@@ -47,6 +47,7 @@
     import com.example.fixzy_ketnoikythuatvien.ui.screen.OrdersScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProductHomePageScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProfileScreen
+    import com.example.fixzy_ketnoikythuatvien.ui.screen.ProviderModeScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProviderScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.SplashScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.TestScreen
@@ -181,6 +182,7 @@
                         NotificationScreen(navController)
                     }
                 }
+
                 composable("profile_page") {
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         ProfileScreen(
@@ -195,6 +197,12 @@
                         EditProfileScreen(
                             navController
                         )
+                    }
+                }
+
+                composable("provider_mode_page") {
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        ProviderModeScreen(navController)
                     }
                 }
 

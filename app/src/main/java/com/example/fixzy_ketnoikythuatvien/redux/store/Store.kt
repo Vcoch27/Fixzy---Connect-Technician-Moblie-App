@@ -21,7 +21,6 @@ class Store {
             subscribe {
                 val newState = getState()
                 _stateFlow.value = newState
-
             }
         }
     }

@@ -64,6 +64,10 @@ fun ProfileScreen(
                     onEditProfile ={
                         navController.navigate("edit_profile_screen")
                     },
+                    onProviderMode = {
+                        navController.navigate("provider_mode_page")
+                    },
+
                     state = state
                 )
             }

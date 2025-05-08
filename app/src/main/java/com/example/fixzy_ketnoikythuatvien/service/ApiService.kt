@@ -10,6 +10,9 @@ import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderRequest
+import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.RegistrationResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnicianResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.UpdateProfileRequest
@@ -85,7 +88,7 @@ interface ApiService {
 
     @POST("bookings")
     @Headers("Content-Type: application/json")
-    fun createBooking(
+     fun createBooking(
         @Header("Authorization") token: String,
         @Body body: CreateBookingRequest
     ): Call<CreateBookingResponse>
@@ -106,4 +109,13 @@ interface ApiService {
         @Body request: UpdateProfileRequest
     ): Response<UpdateProfileResponse>
 
+    @POST("provider/register")
+    fun registerProvider(
+        @Body body: RegisterProviderRequest
+    ): Call<RegisterProviderResponse>
+
+    @GET("provider/registration")
+    fun getRegistration(
+        @Query("userId") userId: Int
+    ): Call<RegistrationResponse>
 }
