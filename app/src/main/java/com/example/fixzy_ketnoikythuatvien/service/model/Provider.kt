@@ -1,5 +1,7 @@
 package com.example.fixzy_ketnoikythuatvien.service.model
 
+import com.google.gson.annotations.SerializedName
+
 
 data class ProviderResponse(
     val success: Boolean,
@@ -42,3 +44,4 @@ data class ProviderData(
     val skills: List<String>,
     val services: List<ServiceDetail>
 )
+//-----------

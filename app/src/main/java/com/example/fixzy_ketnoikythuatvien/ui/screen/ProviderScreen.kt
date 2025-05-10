@@ -30,10 +30,7 @@ import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.ProviderService
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
-import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
-import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
-import com.example.fixzy_ketnoikythuatvien.ui.screen.controller.CategoryController
 import com.example.fixzy_ketnoikythuatvien.ui.screen.controller.TopTechniciansController
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import com.google.common.base.Objects
@@ -42,14 +39,20 @@ import java.net.URLEncoder
 
 @Composable
 fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, providerId: Int) {
-    // State để theo dõi dịch vụ được chọn
     var selectedService by remember { mutableStateOf<ServiceDetail?>(null) }
     val state by Store.stateFlow.collectAsState()
     val providerService = remember { ProviderService() }
-     val store = Store.store
-
+    val providerModeService = remember { ProviderService() }
+    val store = Store.store
+    val  isOwner = state.user?.id == providerId
+    Log.d("ProviderScreen", "isOwner: $isOwner")
+    var bookings = remember { mutableStateListOf<Booking>() }
+    if (isOwner) {
+//        providerModeService.getBookings(providerId)
+//        bookings = state.modeBookings
+    }
     LaunchedEffect(providerId) {
-        if (state.provider == null || state.provider?.name != "Test User") { // Điều kiện để tránh gọi lại nếu đã tải
+        if (state.provider == null || state.provider?.name != "Test User") {
             providerService.fetchProviderDetails(providerId)
         }
     }
@@ -59,32 +62,26 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
         bottomBar = {
             Button(
                 onClick = {
-                    selectedService?.let { service ->
-                        Log.d("ProviderScreen", "Selected service: $service")
-                        // Dispatch hành động UpdateBooking
-//                        store.dispatch(
-//                            Action.UpdateBooking(
-//                                serviceId = service.service_id,
-//                                userId = state.user?.id,
-//                                address = state.user?.address,
-//                                phone = state.user?.phone,
-//                                totalPrice = service.service_price.toDoubleOrNull()
-//                            )
-//                        )
-                        store.dispatch(
-                            Action.UpdateBooking(
-                                serviceId = service.service_id,
-                                userId = state.user?.id,
-                                address = state.user?.address,
-                                phone = state.user?.phone,
-                                totalPrice = service.service_price.toDoubleOrNull()
+                    if (!isOwner) {
+                        selectedService?.let { service ->
+                            Log.d("ProviderScreen", "Selected service: $service")
+                            store.dispatch(
+                                Action.UpdateBooking(
+                                    serviceId = service.service_id,
+                                    userId = state.user?.id,
+                                    address = state.user?.address,
+                                    phone = state.user?.phone,
+                                    totalPrice = service.service_price.toDoubleOrNull()
+                                )
                             )
-                        )
-                        Log.d("ProviderScreen", "Dispatched UpdateBooking for serviceId: ${service.service_id}")
+                            Log.d("ProviderScreen", "Dispatched UpdateBooking for serviceId: ${service.service_id}")
 
-                        val encodedName = URLEncoder.encode(service.service_name, "UTF-8").replace("+", "%20")
-                        navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
-                        Log.d("ProviderScreen", "Navigated to availability_screen with serviceId: ${service.service_id}")
+                            val encodedName = URLEncoder.encode(service.service_name, "UTF-8").replace("+", "%20")
+                            navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
+                            Log.d("ProviderScreen", "Navigated to availability_screen with serviceId: ${service.service_id}")
+                        }
+                    } else {
+                        navController.navigate("add_service_screen")
                     }
                 },
                 modifier = Modifier
@@ -93,7 +90,7 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                 colors = ButtonDefaults.buttonColors(
                     containerColor = AppTheme.colors.mainColor
                 ),
-                enabled = selectedService != null
+                enabled = isOwner || (selectedService != null)
             ) {
                 Icon(
                     imageVector = Icons.Default.Book,
@@ -103,7 +100,7 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Continue to Book",
+                    text = if (isOwner) "Add service" else "Continue to Book",
                     color = Color.White,
                     fontSize = 16.sp
                 )
@@ -132,7 +129,7 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                         .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
                 ) {
                     AsyncImage(
-                        model = providerData.avatar_url ?: "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS5oOiRbP2oJSvvZSEkMfRYF5sprtL8ZlXw8J36BzvgfobTOoknbsgUSG1TBtE-jLtBPOP8b6TtvHq2GOOSxU5YLw" ,
+                        model = providerData.avatar_url ?: "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS5oOiRbP2oJSvvZSEkMfRYF5sprtL8ZlXw8J36BzvgfobTOoknbsgUSG1TBtE-jLtBPOP8b6TtvHq2GOOSxU5YLw",
                         contentDescription = "Provider Avatar",
                         modifier = Modifier
                             .fillMaxWidth()
@@ -164,7 +161,6 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                 ) {
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
-                        // Tên và nghề nghiệp
                         Column {
                             Text(
                                 text = providerData.name,
@@ -181,14 +177,12 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                     }
 
                     item {
-                        // Rating, Orders Completed, Contact
                         Row(
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp)
                         ) {
-                            // Rating
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -209,7 +203,6 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                                     color = AppTheme.colors.onBackground
                                 )
                             }
-                            // Orders Completed
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -230,7 +223,6 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                                     color = AppTheme.colors.onBackground
                                 )
                             }
-                            // Contact
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -255,7 +247,6 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                     }
 
                     item {
-                        // Bio
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -275,7 +266,6 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                     }
 
                     item {
-                        // Skills
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -308,35 +298,104 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                         }
                     }
 
-                    item {
-                        // Danh sách dịch vụ
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.List,
-                                contentDescription = "Services",
-                                tint = AppTheme.colors.onBackgroundVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "Services",
-                                style = AppTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = AppTheme.colors.onBackground
+                    if (isOwner) {
+                        item {
+                            var selectedTab by remember { mutableStateOf(0) }
+                            val tabs = listOf("Services", "Bookings")
+
+                            TabRow(
+                                selectedTabIndex = selectedTab,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                tabs.forEachIndexed { index, title ->
+                                    Tab(
+                                        selected = selectedTab == index,
+                                        onClick = { selectedTab = index },
+                                        text = { Text(title) }
+                                    )
+                                }
+                            }
+
+                            when (selectedTab) {
+                                0 -> {
+                                    Column {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            modifier = Modifier.padding(top = 16.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.List,
+                                                contentDescription = "Services",
+                                                tint = AppTheme.colors.onBackgroundVariant,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Text(
+                                                text = "Services",
+                                                style = AppTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = AppTheme.colors.onBackground
+                                            )
+                                        }
+                                        providerData.services.forEach { service ->
+                                            ServiceCardd(
+                                                service = service,
+                                                isSelected = false,
+                                                onSelect = {
+                                                    val encodedName = URLEncoder.encode(service.service_name, "UTF-8").replace("+", "%20")
+                                                    navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
+                                                },
+                                                modifier = Modifier.padding(bottom = 8.dp),
+                                                isOwner = isOwner
+                                            )
+                                        }
+                                    }
+                                }
+                                1 -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Booking List Placeholder",
+                                            style = AppTheme.typography.bodyMedium,
+                                            color = AppTheme.colors.onBackground
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        item {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.List,
+                                    contentDescription = "Services",
+                                    tint = AppTheme.colors.onBackgroundVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "Services",
+                                    style = AppTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppTheme.colors.onBackground
+                                )
+                            }
+                        }
+                        items(providerData.services) { service ->
+                            ServiceCardd(
+                                service = service,
+                                onSelect = { selectedService = service },
+                                isSelected = selectedService == service,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                isOwner = isOwner
                             )
                         }
-                    }
-
-                    // Danh sách dịch vụ
-                    items(providerData.services) { service ->
-                        ServiceCardd(
-                            service = service,
-                            onSelect = { selectedService = service },
-                            isSelected = selectedService == service,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
                     }
                 }
             }
@@ -349,7 +408,8 @@ fun ServiceCardd(
     service: ServiceDetail,
     isSelected: Boolean,
     onSelect: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isOwner: Boolean = false
 ) {
     Card(
         modifier = modifier
@@ -358,7 +418,7 @@ fun ServiceCardd(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) AppTheme.colors.mainColor.copy(alpha = 0.1f)
+            containerColor = if (isSelected && !isOwner) AppTheme.colors.mainColor.copy(alpha = 0.1f)
             else AppTheme.colors.surface
         )
     ) {
@@ -422,14 +482,16 @@ fun ServiceCardd(
                     )
                 }
             }
-            RadioButton(
-                selected = isSelected,
-                onClick = { onSelect() },
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = AppTheme.colors.mainColor,
-                    unselectedColor = AppTheme.colors.onBackgroundVariant
+            if (!isOwner) {
+                RadioButton(
+                    selected = isSelected,
+                    onClick = { onSelect() },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = AppTheme.colors.mainColor,
+                        unselectedColor = AppTheme.colors.onBackgroundVariant
+                    )
                 )
-            )
+            }
         }
     }
 }

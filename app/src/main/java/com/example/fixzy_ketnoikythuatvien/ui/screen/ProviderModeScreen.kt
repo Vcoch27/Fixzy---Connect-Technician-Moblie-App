@@ -1,6 +1,7 @@
 package com.example.fixzy_ketnoikythuatvien.ui.screen
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -54,9 +55,10 @@ fun ProviderModeScreen(
 
     val providerService = remember { ProviderService() }
     val userService = remember { UserService() }
-    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        imageUri = uri
-    }
+    val imagePicker =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            imageUri = uri
+        }
 
     val registration = state.registration
 
@@ -75,6 +77,40 @@ fun ProviderModeScreen(
             errorMessage = null
         }
     }
+
+    LaunchedEffect(state.orderUrl) {
+        state.orderUrl?.let { url ->
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
+        }
+    }
+//    LaunchedEffect(state.appTransId) {
+//        coroutineScope.launch {
+//            state.appTransId?.let {
+//                while (true) {
+//                    try {
+//                        providerService.getRegistration(state.user?.id ?: return@let)
+//                        delay(20000)
+//                        Log.i(
+//                            "ProviderModeScreen",
+//                            "Fetching registration ${state.registration?.paymentStatus}"
+//                        )
+//                        if (state.registration?.paymentStatus == "paid") {
+//                            navController.navigate("home_page") {
+//                                popUpTo(navController.graph.startDestinationId)
+//                                launchSingleTop = true
+//                            }
+//                            break
+//                        }
+//                    } catch (e: Exception) {
+//                        Log.e("ProviderModeScreen", "Error fetching registration: ${e.message}")
+//                        delay(10000) // Wait before retrying
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
     var isTechnician = state.user?.role == "technician"
     Log.d("ProviderModeScreen", "isTechnician:${state.user?.role}")
     Column(
@@ -87,9 +123,13 @@ fun ProviderModeScreen(
         when {
             isLoading -> CircularProgressIndicator()
 
-            errorMessage != null -> Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
+            errorMessage != null -> Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.error
+            )
+
             isTechnician -> {
-                Text("Bạn đã là Technician!", style = MaterialTheme.typography.headlineSmall)
+                navController.navigate("provider_screen/${state.user?.id}")
             }
 
             registration == null -> {
@@ -203,13 +243,19 @@ fun ProviderModeScreen(
             else -> {
                 when (registration.status) {
                     "pending" -> {
-                        Text("Đơn đăng ký của bạn đang được xử lý", style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            "Đơn đăng ký của bạn đang được xử lý",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         RegistrationInfo(registration)
                     }
 
                     "rejected" -> {
-                        Text("Đơn đăng ký của bạn đã bị từ chối", style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            "Đơn đăng ký của bạn đã bị từ chối",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = {
                             // Cho phép gửi lại
@@ -220,25 +266,49 @@ fun ProviderModeScreen(
                     }
 
                     "confirmed" -> {
-                        Text("Đơn đăng ký của bạn đã được duyệt!", style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            "Đơn đăng ký của bạn đã được duyệt!",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         RegistrationInfo(registration)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Hoàn thành để trở thành Provider", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Hoàn thành để trở thành Provider",
+                            style = MaterialTheme.typography.titleMedium
+                        )
                         Text("Phí hàng tháng: ${registration.monthlyFee}")
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
                             onClick = {
-                                // Thanh toán
+                                providerService.createPayment(registration.id, registration.userId)
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Tiếp tục thanh toán")
+                            if (state.isGetPayment) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Text("Tiếp tục thanh toán")
+                            }
+                        }
+                        state.getPaymentError?.let {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Lỗi: $it",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
 
                     else -> {
-                        Text("Trạng thái đơn không xác định", style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            "Trạng thái đơn không xác định",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
                     }
                 }
             }

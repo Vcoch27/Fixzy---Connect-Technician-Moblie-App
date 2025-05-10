@@ -51,6 +51,7 @@
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProviderScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.SplashScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.TestScreen
+    import com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen.AddServiceScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen.ExtendedChat
     import com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen.LoginScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen.SignUpScreen
@@ -205,13 +206,18 @@
                         ProviderModeScreen(navController)
                     }
                 }
-
+                composable("add_service_screen") {
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        AddServiceScreen(navController)
+                    }
+                }
                 composable("test_page") {
                     val viewModel: TestViewModel = viewModel()
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         TestScreen(viewModel = viewModel)
                     }
                 }
+
             }
         }
     }

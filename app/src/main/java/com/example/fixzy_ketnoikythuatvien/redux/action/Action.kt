@@ -87,4 +87,15 @@ sealed class Action{
     data class GetRegistrationFailure(val error: String) : Action()
     object GetRegistrationStatusLoading : Action()
 
+    data class CreatePaymentSuccess(val orderUrl: String, val appTransId: String?) : Action()
+    data class CreatePaymentFailure(val error: String) : Action()
+    object CreatePaymentLoading : Action()
+
+    data class CheckPaymentStatusSuccess(val registration: Registration) : Action()
+    data class CheckPaymentStatusFailure(val error: String) : Action()
+
+    data class CreateServiceSuccess(val message: String) : Action()
+    data class CreateServiceFailure(val error: String) : Action()
+    object CreateServiceLoading : Action()
+
 }

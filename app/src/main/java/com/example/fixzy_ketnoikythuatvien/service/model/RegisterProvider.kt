@@ -32,3 +32,13 @@ data class Registration(
     @SerializedName("created_at") val createdAt: String,
     @SerializedName("updated_at") val updatedAt: String
 )
+data class CreatePaymentResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("order_url") val order_url: String?,
+    @SerializedName("app_trans_id") val app_trans_id: String?,
+    @SerializedName("error") val error: String?
+)
+data class CreatePaymentRequest(
+    val userId: Int,
+    val embedData: String
+)

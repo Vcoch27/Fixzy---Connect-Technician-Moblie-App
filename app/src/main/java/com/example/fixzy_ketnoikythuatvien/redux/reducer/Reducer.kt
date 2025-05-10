@@ -292,6 +292,7 @@ class Reducer {
                         providerError = null
                     )
                 }
+
                 is Action.RegisterProviderFailure -> {
                     state.copy(
                         isLoadingProvider = false,
@@ -313,6 +314,7 @@ class Reducer {
                         registration = action.registration
                     )
                 }
+
                 is Action.GetRegistrationFailure -> {
                     state.copy(
                         isGetRegistration = false,
@@ -320,6 +322,7 @@ class Reducer {
                         registration = null
                     )
                 }
+
                 is Action.GetRegistrationStatusLoading -> {
                     state.copy(
                         isGetRegistration = true,
@@ -327,6 +330,47 @@ class Reducer {
                         registration = null
                     )
                 }
+
+                is Action.CreatePaymentSuccess -> {
+                    state.copy(
+                        isGetPayment = false,
+                        getPaymentError = null,
+                        orderUrl = action.orderUrl,
+                        appTransId = action.appTransId
+                    )
+                }
+
+                is Action.CreatePaymentFailure -> {
+                    state.copy(
+                        isGetPayment = false,
+                        getPaymentError = action.error,
+                        orderUrl = null,
+                    )
+                }
+
+                is Action.CreatePaymentLoading -> {
+                    state.copy(
+                        isGetPayment = true,
+                        getPaymentError = null,
+                        orderUrl = null,
+                    )
+                }
+                is Action.CreateServiceLoading -> state.copy(
+                    isCreatingService = true,
+                    createServiceError = null,
+                    createServiceMessage = null
+                )
+                is Action.CreateServiceSuccess -> state.copy(
+                    isCreatingService = false,
+                    createServiceError = null,
+                    createServiceMessage = action.message
+                )
+                is Action.CreateServiceFailure -> state.copy(
+                    isCreatingService = false,
+                    createServiceError = action.error,
+                    createServiceMessage = null
+                )
+
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")
                     state

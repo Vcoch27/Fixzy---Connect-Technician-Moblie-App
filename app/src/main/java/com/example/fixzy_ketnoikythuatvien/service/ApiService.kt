@@ -7,6 +7,10 @@ import com.example.fixzy_ketnoikythuatvien.service.model.AvailabilityResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.CategoryResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.CreatePaymentRequest
+import com.example.fixzy_ketnoikythuatvien.service.model.CreatePaymentResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceRequest
+import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
@@ -40,9 +44,9 @@ val URL = "192.168.1.10:3000"
 object ApiClient {
     val apiService: ApiService by lazy {
         val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
 
         Retrofit.Builder()
@@ -118,4 +122,16 @@ interface ApiService {
     fun getRegistration(
         @Query("userId") userId: Int
     ): Call<RegistrationResponse>
+
+    @POST("provider/{registrationId}/create-payment")
+    fun createPayment(
+        @Path("registrationId") registrationId: Int,
+        @Body request: CreatePaymentRequest
+    ): Call<CreatePaymentResponse>
+
+    @POST("service")
+    fun createService(
+        @Header("Authorization") token: String,
+        @Body body: CreateServiceRequest
+    ): Call<CreateServiceResponse>
 }

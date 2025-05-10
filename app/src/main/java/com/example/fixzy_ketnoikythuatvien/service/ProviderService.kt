@@ -6,6 +6,8 @@ import androidx.annotation.RequiresApi
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.CreatePaymentRequest
+import com.example.fixzy_ketnoikythuatvien.service.model.CreatePaymentResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderResponse
@@ -18,6 +20,8 @@ import retrofit2.Response
 import retrofit2.awaitResponse
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 private const val TAG = "ProviderService"
 
@@ -106,7 +110,8 @@ class ProviderService {
                 val filteredAvailability = availabilityList.filter {
                     try {
                         val date = LocalDate.parse(it.date, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        val isWithinRange = date.isBefore(twoWeeksLater) && date.isAfter(currentDate.minusDays(1))
+                        val isWithinRange =
+                            date.isBefore(twoWeeksLater) && date.isAfter(currentDate.minusDays(1))
                         isWithinRange
                     } catch (e: Exception) {
                         Log.e(TAG, "Date parsing error: ${it.date}", e)
@@ -196,5 +201,68 @@ class ProviderService {
         })
     }
 
+    // Payment creation function
+    fun createPayment(id: Int, userId: Int?) {
+
+        Log.d(TAG, "createPayment called with id=$id, userId=$userId")
+
+        if (userId == 0 || userId == null) {
+            Log.w(TAG, "User ID is null or zero")
+            store.dispatch(Action.GetRegistrationFailure("ID is null"))
+            return
+        }
+
+        val embedData = Json.encodeToString(
+            mapOf(
+                "registration_id" to id.toString(),
+                "user_id" to userId.toString(),
+                "type" to "provider_registration",
+                "redirecturl" to "fixzy://payment-callback"
+            )
+        )
+
+        Log.d(TAG, "Embed data: $embedData")
+
+        val request = CreatePaymentRequest(
+            userId = userId,
+            embedData = embedData
+        )
+
+        Log.d(TAG, "Sending payment request for user $userId")
+
+        apiService.createPayment(id, request).enqueue(object : Callback<CreatePaymentResponse> {
+            override fun onResponse(
+                call: Call<CreatePaymentResponse>,
+                response: Response<CreatePaymentResponse>
+            ) {
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    Log.d(TAG, "Response success: $body")
+
+                    if (body.success && body.order_url != null) {
+                        Log.i(TAG, "Payment created. Order URL: ${body.order_url}")
+                        store.dispatch(
+                            Action.CreatePaymentSuccess(
+                                body.order_url,
+                                body.app_trans_id
+                            )
+                        )
+                    } else {
+                        Log.e(TAG, "Payment creation failed: ${body.error}")
+                        store.dispatch(Action.CreatePaymentFailure(body.error ?: "Unknown error"))
+                    }
+                } else {
+                    Log.e(TAG, "Response unsuccessful or body is null")
+                    store.dispatch(Action.CreatePaymentFailure("Unknown error"))
+                }
+            }
+
+            override fun onFailure(call: Call<CreatePaymentResponse>, t: Throwable) {
+                Log.e(TAG, "API call failed: ${t.message}")
+                store.dispatch(Action.CreatePaymentFailure(t.message ?: "Unknown error"))
+            }
+        })
+    }
+    
 }
 

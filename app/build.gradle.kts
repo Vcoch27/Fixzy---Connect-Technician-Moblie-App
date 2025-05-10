@@ -21,7 +21,7 @@ android {
     buildTypes {
         getByName("debug") {
             //wifi
-            buildConfigField("String", "BASE_URL", "\"http://192.168.1.10:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.5:3000/\"")
         }
         getByName("release") {
             buildConfigField("String", "BASE_URL", "\"https://192.168.1.8:3000/\"")
@@ -92,4 +92,5 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 
     implementation ("com.cloudinary:cloudinary-android:2.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }

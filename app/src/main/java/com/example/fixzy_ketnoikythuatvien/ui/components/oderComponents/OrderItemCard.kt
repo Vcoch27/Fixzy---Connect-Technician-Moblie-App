@@ -64,8 +64,6 @@ val TAG = "OrderItemCard"
 fun OrderItemCard(booking: DetailBooking,
                   onBookingUpdated: (DetailBooking) -> Unit) {
     val scope = rememberCoroutineScope()
-    val store = Store.store // Assuming Store is accessible
-    val state by Store.stateFlow.collectAsState()// Collect AppState as Compose state
     val bookingService = remember { BookingService() }
 
     var isCancelLoading by remember { mutableStateOf(false) }

@@ -50,9 +50,21 @@ data class AppState(
     val isUpdatingBookingStatus: Boolean = false,
     val updateBookingStatusError: String? = null,
     val updateBookingStatusMessage: String? = null,
-
+//____________
     val isGetRegistration: Boolean = false,
     val getRegistrationError: String? = null,
     val registration: Registration? = null,
+    //_________
+
+
+    val isGetPayment: Boolean = false,
+    val getPaymentError: String? = null,
+    val orderUrl: String? = null,
+    val appTransId: String? = null,
+
+    val createServiceError: String? = null,
+    val createServiceMessage: String? = null,
+    val isCreatingService: Boolean = false,
+
 
     )
