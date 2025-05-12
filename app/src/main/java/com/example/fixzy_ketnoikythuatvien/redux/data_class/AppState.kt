@@ -7,10 +7,12 @@ import com.example.fixzy_ketnoikythuatvien.service.TestItem
 import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
+import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Registration
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
+import com.example.fixzy_ketnoikythuatvien.service.model.SummaryBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 
 //lớp chứa các model dữ liệu
@@ -25,6 +27,7 @@ data class AppState(
     val topTechnicians: List<TopTechnician> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
+    val success: Boolean = false,
 
     val selectedCategory: CategoryData? = null, // Category được chọn
     val services: List<Service> = emptyList(), // Danh sách services
@@ -66,5 +69,11 @@ data class AppState(
     val createServiceMessage: String? = null,
     val isCreatingService: Boolean = false,
 
+    val modeService: GetModeServiceResponse? = null,
 
+    val todayBookings: List<SummaryBooking> = emptyList(),
+    val needAction: List<SummaryBooking> = emptyList(),
+    var hasShownBookingNotification: Boolean = false,
+
+    val newScheduleId: Int? = null,
     )

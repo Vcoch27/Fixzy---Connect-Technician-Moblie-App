@@ -42,15 +42,9 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
     var selectedService by remember { mutableStateOf<ServiceDetail?>(null) }
     val state by Store.stateFlow.collectAsState()
     val providerService = remember { ProviderService() }
-    val providerModeService = remember { ProviderService() }
     val store = Store.store
     val  isOwner = state.user?.id == providerId
     Log.d("ProviderScreen", "isOwner: $isOwner")
-    var bookings = remember { mutableStateListOf<Booking>() }
-    if (isOwner) {
-//        providerModeService.getBookings(providerId)
-//        bookings = state.modeBookings
-    }
     LaunchedEffect(providerId) {
         if (state.provider == null || state.provider?.name != "Test User") {
             providerService.fetchProviderDetails(providerId)
@@ -138,18 +132,7 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                         placeholder = painterResource(id = R.drawable.coc),
                         error = painterResource(id = R.drawable.coc)
                     )
-                    IconButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
+
                 }
 
                 LazyColumn(
@@ -346,7 +329,8 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                                                     navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
                                                 },
                                                 modifier = Modifier.padding(bottom = 8.dp),
-                                                isOwner = isOwner
+                                                isOwner = isOwner,
+                                                navController= navController
                                             )
                                         }
                                     }
@@ -393,7 +377,8 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                                 onSelect = { selectedService = service },
                                 isSelected = selectedService == service,
                                 modifier = Modifier.padding(bottom = 8.dp),
-                                isOwner = isOwner
+                                isOwner = isOwner,
+                                navController = navController,
                             )
                         }
                     }
@@ -409,12 +394,13 @@ fun ServiceCardd(
     isSelected: Boolean,
     onSelect: () -> Unit,
     modifier: Modifier = Modifier,
-    isOwner: Boolean = false
+    isOwner: Boolean = false,
+    navController: NavController
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onSelect() },
+            .clickable { if(isOwner) (navController.navigate("service_provider_mode/${service.service_id}/${service.service_name}"))else onSelect() },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(

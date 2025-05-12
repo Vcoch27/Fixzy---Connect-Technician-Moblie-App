@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -30,10 +31,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,9 +49,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderData
 import com.example.fixzy_ketnoikythuatvien.data.model.OrderStatus
+import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.BookingService
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
@@ -59,19 +65,26 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 val TAG = "OrderItemCard"
+
 @Composable
 @RequiresApi(Build.VERSION_CODES.O)
-fun OrderItemCard(booking: DetailBooking,
-                  onBookingUpdated: (DetailBooking) -> Unit) {
+fun OrderItemCard(
+    booking: DetailBooking,
+    onBookingUpdated: (DetailBooking) -> Unit,
+    navController: NavController
+) {
     val scope = rememberCoroutineScope()
     val bookingService = remember { BookingService() }
-
+    val store = Store.store
     var isCancelLoading by remember { mutableStateOf(false) }
     var showConfirmDialog by remember { mutableStateOf(false) }
-
+    var showReviewBox by remember { mutableStateOf(false) }
+    var rating by remember { mutableStateOf<Int?>(null) }
+    var feedback by remember { mutableStateOf<String?>(null) }
     Log.d("OrderItemCard", "Rendering OrderItemCard for booking: ${booking.reference_code}")
     val currentTime = LocalDateTime.now()
     Log.d("OrderItemCard", "Current time: $currentTime")
+    var isLoading by remember { mutableStateOf(false) }
     val bookingDateTime = try {
         LocalDateTime.parse("${booking.booking_date}T${booking.booking_time}")
     } catch (e: Exception) {
@@ -125,19 +138,18 @@ fun OrderItemCard(booking: DetailBooking,
                     .width(340.dp)
                     .align(Alignment.CenterHorizontally)
             )
-
+            Text(
+                text = "Status",
+                style = LocalAppTypography.current.body,
+                color = Color.Gray,
+                modifier = Modifier.weight(1f)
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 10.dp, end = 10.dp, top = 8.dp, bottom = 8.dp)
             ) {
-                Text(
-                    text = "Status",
-                    style = LocalAppTypography.current.body,
-                    color = Color.Gray,
-                    modifier = Modifier.weight(1f)
-                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = booking.status ?: "Unknown",
@@ -147,6 +159,7 @@ fun OrderItemCard(booking: DetailBooking,
                         "Confirmed" -> AppTheme.colors.onBackgroundVariant
                         "Completed" -> AppTheme.colors.mainColor
                         "Cancelled" -> Color.Red
+                        "WaitingForCustomerConfirmation" -> Color.Black
                         else -> AppTheme.colors.onRegularSurface
                     },
                     fontWeight = FontWeight.Bold,
@@ -158,6 +171,7 @@ fun OrderItemCard(booking: DetailBooking,
                                 "Confirmed" -> Color(0xFFF2FCF0)
                                 "Completed" -> Color(0xFFE3F0FF)
                                 "Cancelled" -> Color(0xFFFFF0F0)
+                                "WaitingForCustomerConfirmation" -> Color(0xFFFFF0F0)
                                 else -> Color(0xFFFFF0F0)
                             },
                             shape = RoundedCornerShape(12.dp)
@@ -261,6 +275,15 @@ fun OrderItemCard(booking: DetailBooking,
                         modifier = Modifier.padding(start = 10.dp, top = 8.dp)
                     )
                 }
+
+                "WaitingForCustomerConfirmation" -> {
+                    Text(
+                        text = "Let confirm Completion and Review",
+                        style = LocalAppTypography.current.bodySmall,
+                        color = Color.Red,
+                        modifier = Modifier.padding(start = 10.dp, top = 8.dp)
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -303,7 +326,10 @@ fun OrderItemCard(booking: DetailBooking,
 
                         OutlinedButton(
                             onClick = {
-                                Log.d(TAG, "Cancel button clicked for bookingId=${booking.booking_id}")
+                                Log.d(
+                                    TAG,
+                                    "Cancel button clicked for bookingId=${booking.booking_id}"
+                                )
                                 scope.launch {
                                     showConfirmDialog = true
                                 }
@@ -331,9 +357,13 @@ fun OrderItemCard(booking: DetailBooking,
                                         isCancelLoading = true
                                         try {
                                             // Gọi API và xử lý kết quả
-                                            val success = bookingService.updateBookingStatus(booking.booking_id, "Cancelled")
+                                            val success = bookingService.updateBookingStatus(
+                                                booking.booking_id,
+                                                "Completed"
+                                            )
                                             if (success) {
-                                                val updatedBooking = booking.copy(status = "Cancelled")
+                                                val updatedBooking =
+                                                    booking.copy(status = "Cancelled")
                                                 onBookingUpdated(updatedBooking)
                                             }
                                         } catch (e: Exception) {
@@ -412,6 +442,115 @@ fun OrderItemCard(booking: DetailBooking,
                     }
                 }
 
+                "WaitingForCustomerConfirmation" -> {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp, bottom = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    showReviewBox = true
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colors.mainColor)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Confirm Completion",
+                                    color = Color.White,
+                                    style = LocalAppTypography.current.bodySmall,
+                                )
+                            }
+                        }
+
+                        if (showReviewBox) {
+                            AlertDialog(
+                                onDismissRequest = { showReviewBox = false },
+                                title = { Text("Review Booking") },
+                                text = {
+                                    Column {
+                                        Text("Rating (0-5):")
+                                        TextField(
+                                            value = rating?.toString() ?: "",
+                                            onValueChange = {
+                                                rating = it.toIntOrNull()?.coerceIn(0, 5)
+                                            },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                        )
+                                        Text("Feedback:")
+                                        TextField(
+                                            value = feedback ?: "",
+                                            onValueChange = { feedback = it },
+                                            maxLines = 3
+                                        )
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            Log.d(TAG, "Confirm button clicked")
+                                            Log.d(TAG, "Rating: $rating, Feedback: $feedback, Booking ID: ${booking.booking_id}, Status: ${booking.status}")
+                                            scope.launch {
+                                                if (rating == null || rating !in 0..5) {
+                                                    store.dispatch(
+                                                        Action.UpdateBookingStatusFailure("Đánh giá phải từ 0 đến 5.")
+                                                    )
+                                                    return@launch
+                                                }
+
+                                                isLoading = true // Bắt đầu loading
+
+                                                val success = bookingService.updateBookingStatus(
+                                                    bookingId = booking.booking_id,
+                                                    status = "Completed",
+                                                    rating = rating,
+                                                    feedback = feedback
+                                                )
+
+                                                isLoading = false // Kết thúc loading
+
+                                                if (success) {
+                                                    store.dispatch(
+                                                        Action.UpdateBookingStatusSuccess("Xác nhận hoàn thành thành công.")
+                                                    )
+                                                    showReviewBox = false
+                                                    navController.navigate("orders_page")
+                                                }
+                                            }
+                                        },
+                                        enabled = !isLoading
+                                    ) {
+                                        if (isLoading) {
+                                            CircularProgressIndicator(
+                                                color = Color.White,
+                                                strokeWidth = 2.dp,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        } else {
+                                            Text("Confirm")
+                                        }
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(onClick = { showReviewBox = false }) {
+                                        Text("Cancel")
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
                 "Completed", "Cancelled" -> {
                     Row(
                         modifier = Modifier
@@ -470,10 +609,11 @@ private fun monthFromNumber(month: String): String {
         else -> ""
     }
 }
+
 @Composable
 fun ConfirmDialog(
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,

@@ -189,32 +189,39 @@ class Reducer {
                 is Action.UpdateBooking -> {
                     Log.d(TAG, "UpdateBooking serviceId=${action.serviceId}")
 
-                    val newBooking = state.booking?.copy(
-                        userId = action.userId ?: state.booking?.userId,
-                        serviceId = action.serviceId ?: state.booking?.serviceId,
-                        availabilityId = action.availabilityId ?: state.booking?.availabilityId,
-                        date = action.date ?: state.booking?.date,
-                        startTime = action.startTime ?: state.booking?.startTime,
-                        address = action.address ?: state.booking?.address,
-                        phone = action.phone ?: state.booking?.phone,
-                        notes = action.notes ?: state.booking?.notes,
-                        totalPrice = action.totalPrice ?: state.booking?.totalPrice,
+                    val currentBooking = state.booking
+
+                    val newBooking = currentBooking?.copy(
+                        userId = action.userId ?: currentBooking.userId,
+                        serviceId = action.serviceId ?: currentBooking.serviceId,
+                        serviceName = action.serviceName ?: currentBooking.serviceName,
+                        availabilityId = action.availabilityId ?: currentBooking.availabilityId,
+                        date = action.date ?: currentBooking.date,
+                        startTime = action.startTime ?: currentBooking.startTime,
+                        duration = action.duration ?: currentBooking.duration,
+                        address = action.address ?: currentBooking.address,
+                        phone = action.phone ?: currentBooking.phone,
+                        notes = action.notes ?: currentBooking.notes,
+                        totalPrice = action.totalPrice ?: currentBooking.totalPrice,
+                        status = action.status ?: currentBooking.status
                     ) ?: Booking(
-                        userId = action.userId,
-                        serviceId = action.serviceId,
-                        availabilityId = action.availabilityId,
-                        date = action.date,
-                        startTime = action.startTime,
-                        address = action.address,
-                        phone = action.phone,
+                        userId = action.userId ?: 0,
+                        serviceId = action.serviceId ?: 0,
+                        serviceName = action.serviceName ?: "",
+                        availabilityId = action.availabilityId ?: 0,
+                        date = action.date ?: "",
+                        startTime = action.startTime ?: "",
+                        duration = action.duration ?: 0,
+                        address = action.address ?: "",
+                        phone = action.phone ?: "",
                         notes = action.notes,
-                        totalPrice = action.totalPrice,
+                        totalPrice = action.totalPrice ?: 0.0,
                         status = action.status ?: "Pending"
                     )
-                    state.copy(
-                        booking = newBooking
-                    )
+
+                    state.copy(booking = newBooking)
                 }
+
 
                 is Action.CreateBooking -> state.copy(
                     isCreatingBooking = true,
@@ -355,21 +362,76 @@ class Reducer {
                         orderUrl = null,
                     )
                 }
+
                 is Action.CreateServiceLoading -> state.copy(
                     isCreatingService = true,
                     createServiceError = null,
                     createServiceMessage = null
                 )
+
                 is Action.CreateServiceSuccess -> state.copy(
                     isCreatingService = false,
                     createServiceError = null,
                     createServiceMessage = action.message
                 )
+
                 is Action.CreateServiceFailure -> state.copy(
                     isCreatingService = false,
                     createServiceError = action.error,
                     createServiceMessage = null
                 )
+
+                is Action.GetModeServiceSuccess -> state.copy(
+                    modeService = action.data,
+                    isLoading = false,
+                    error = null
+                )
+
+                is Action.GetModeServiceFailure -> state.copy(
+                    isLoading = false,
+                    error = action.error
+                )
+
+                is Action.GetSummaryStatusSuccess -> {
+                    state.copy(
+                        isLoading = false,
+                        success = true,
+                        todayBookings = action.todayBookings,
+                        needAction = action.needAction,
+                        error = null,
+                        hasShownBookingNotification = true
+                    )
+                }
+
+                is Action.GetSummaryStatusFailure -> {
+                    state.copy(
+                        isLoading = false,
+                        success = false,
+                        error = action.error,
+                        hasShownBookingNotification = true
+                    )
+                }
+
+                is Action.AddScheduleSuccess -> {
+                    state.copy(
+                        isLoading = false,
+                        success = true,
+                        newScheduleId = action.message.toIntOrNull(),
+                        error = null
+                    )
+                }
+
+                is Action.AddScheduleFailure -> {
+                    state.copy(
+                        isLoading = false,
+                        success = false,
+                        error = action.error,
+                    )
+                }
+
+                is Action.AddScheduleLoading -> {
+                    state.copy(isLoading = true, newScheduleId = null)
+                }
 
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")

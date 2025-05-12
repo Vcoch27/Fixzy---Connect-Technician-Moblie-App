@@ -64,7 +64,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
-import com.example.fixzy_ketnoikythuatvien.service.BookingService
 import com.example.fixzy_ketnoikythuatvien.service.ServiceService
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.Schedule
@@ -474,5 +473,6 @@ data class ServiceSchedule(
     val day_of_week: String,
     val start_time: String,
     val end_time: String,
-    val created_at: String
+    val created_at: String,
+    val status: String?=null,
 )

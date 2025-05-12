@@ -1,19 +1,38 @@
 package com.example.fixzy_ketnoikythuatvien.service.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Booking(
-    var userId: Int? = null,
-    var serviceId: Int? = null,
-    var serviceName: String? = null,
-    var availabilityId: Int? = null,
-    var date: String? = null,
-    var startTime: String? = null,
-    var duration: Int? = null, // in minutes
-    var address: String? = null,
-    var phone: String? = null,
+    var userId: Int,
+    var serviceId: Int,
+    var serviceName: String,
+    var availabilityId: Int,
+    var date: String,
+    var startTime: String,
+    var duration: Int,
+    var address: String,
+    var phone: String,
     var notes: String? = null,
-    var totalPrice: Double? = null,
+    var totalPrice: Double,
     var status: String = "Pending"
 )
+// Booking.kt
+//data class Booking(
+//    val booking_id: Int,
+//    val user_id: Int,
+//    val service_id: Int,
+//    val booking_date: String, // "2024-06-10"
+//    val booking_time: String, // "09:00"
+//    val address: String,
+//    val status: String,       // "Pending", "Confirmed", "Completed", "Cancelled"
+//    val total_price: Double,
+//    val reference_code: String,
+//    val created_at: String,
+//    val updated_at: String,
+//    val availability_id: Int,
+//    val notes: String?,
+//    val customerName: String // Thêm trường này để hiển thị tên khách (không có trong bảng gốc, dùng cho UI mock)
+//)
 
 data class CreateBookingRequest(
     val service_id: Int,
@@ -51,6 +70,29 @@ data class DetailBooking(
 data class GetBookingsResponse(
     val success: Boolean,
     val data: List<DetailBooking>
+)
+
+
+data class GetSummaryStatusResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("todayBookings") val todayBookings: List<SummaryBooking>?,
+    @SerializedName("needAction") val needAction: List<SummaryBooking>?,
+    )
+data class SummaryBooking(
+    @SerializedName("booking_id") val bookingId: Int,
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("service_id") val serviceId: Int,
+    @SerializedName("booking_date") val bookingDate: String,
+    @SerializedName("booking_time") val bookingTime: String,
+    @SerializedName("address") val address: String,
+    @SerializedName("phone") val phone: String,
+    @SerializedName("status") val status: String,
+    @SerializedName("total_price") val totalPrice: String,
+    @SerializedName("reference_code") val referenceCode: String,
+    @SerializedName("created_at") val createdAt: String,
+    @SerializedName("updated_at") val updatedAt: String,
+    @SerializedName("availability_id") val availabilityId: Int,
+    @SerializedName("notes") val notes: String?
 )
 
 

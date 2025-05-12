@@ -3,23 +3,65 @@ package com.example.fixzy_ketnoikythuatvien.service
 import android.util.Log
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
+import com.example.fixzy_ketnoikythuatvien.service.model.AddScheduleRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import okhttp3.Response
 import javax.security.auth.callback.Callback
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import retrofit2.Response
+
 
 private const val TAG = "ServiceService"
+
 class ServiceService {
     private val apiService = ApiClient.apiService
     private val store = Store.store
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
+    suspend fun getModeService(idService: Int) {
+        withContext(Dispatchers.IO) {
+            try {
+                Log.d("ServiceService", "Bắt đầu lấy token Firebase...")
+                val idToken = getFirebaseToken()
+                    ?: throw Exception("Không thể lấy token: Người dùng chưa đăng nhập")
+                Log.d("ServiceService", "Token đã lấy thành công: $idToken")
+
+                try {
+                    Log.d("ServiceService", "Gọi API getModeService với idService = $idService")
+                    val call = apiService.getModeService("Bearer $idToken", idService)
+                    val response = call.execute()
+                    Log.d("ServiceService", "Đã nhận được phản hồi từ API")
+
+                    if (response.isSuccessful) {
+                        Log.d("ServiceService", "API trả về thành công: ${response.code()}")
+                        response.body()?.let {
+                            Log.d("ServiceService", "Response body: $it")
+                            store.dispatch(Action.GetModeServiceSuccess(it))
+                        } ?: run {
+                            Log.e("ServiceService", "Empty response body")
+                            store.dispatch(Action.GetModeServiceFailure("Không thể lấy thông tin dịch vụ: Phản hồi rỗng"))
+                        }
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("ServiceService", "API call failed: ${response.code()} - $errorBody")
+                        store.dispatch(Action.GetModeServiceFailure("Lỗi: ${errorBody ?: response.message()}"))
+                    }
+                } catch (e: Exception) {
+                    Log.e("ServiceService", "Ngoại lệ trong khi gọi API: ${e.message}", e)
+                    store.dispatch(Action.GetModeServiceFailure("Lỗi kết nối: ${e.message}"))
+                }
+            } catch (e: Exception) {
+                Log.e("ServiceService", "Ngoại lệ trong quá trình lấy token hoặc gọi API: ${e.message}", e)
+                store.dispatch(Action.GetModeServiceFailure("Lỗi: ${e.message}"))
+            }
+        }
+    }
     suspend fun createService(body: CreateServiceRequest) {
         withContext(Dispatchers.IO) {
             try {
@@ -33,7 +75,7 @@ class ServiceService {
                 Log.d("CreateService", "Calling API with token")
                 try {
                     val response = apiService.createService("Bearer $idToken", body).execute()
-                    
+
                     if (response.isSuccessful) {
                         Log.d("CreateService", "API call successful")
                         response.body()?.let {
@@ -59,6 +101,35 @@ class ServiceService {
         }
     }
 
+    suspend fun addSchedule(serviceId: Int,body: AddScheduleRequest){
+        withContext(Dispatchers.IO) {
+            try{
+                Log.d("CreateService", "Dispatching loading action")
+                store.dispatch(Action.AddScheduleLoading())
+                val idToken = getFirebaseToken()
+                    ?: throw Exception("Không thể lấy token: Người dùng chưa đăng nhập")
+                Log.d("CreateService", "Calling API with token")
+                try {
+                    val response = apiService.addSchedule("Bearer $idToken",serviceId, body).execute()
+                    if (response.isSuccessful) {
+                        response.body()?.let {
+                            store.dispatch(Action.AddScheduleSuccess("tao lich thanh cong"))
+                        } ?: run {
+                            store.dispatch(Action.AddScheduleFailure("Không thể tạo dịch vụ: Phản hồi rỗng"))
+                        }
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        store.dispatch(Action.AddScheduleFailure("Lỗi: ${errorBody ?: response.message()}"))
+                    }
+                } catch (e: Exception) {
+                    store.dispatch(Action.AddScheduleFailure("Lỗi kết nối: ${e.message}"))
+                }
+            }catch (e: Exception) {
+                store.dispatch(Action.AddScheduleFailure("Lỗi: ${e.message}"))
+            }
+        }
+    }
+
     private suspend fun getFirebaseToken(): String? = suspendCancellableCoroutine { continuation ->
         val user = auth.currentUser
         if (user == null) {
@@ -70,7 +141,10 @@ class ServiceService {
         user.getIdToken(false).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val token = task.result?.token
-                Log.d("CreateService", "Firebase token retrieved: ${token?.take(10)}...") // Chỉ log vài ký tự
+                Log.d(
+                    "CreateService",
+                    "Firebase token retrieved: ${token?.take(10)}..."
+                ) // Chỉ log vài ký tự
                 continuation.resume(token)
             } else {
                 Log.e("CreateService", "Failed to get token", task.exception)

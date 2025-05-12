@@ -3,6 +3,8 @@ package com.example.fixzy_ketnoikythuatvien.service
 import com.example.fixzy_ketnoikythuatvien.BuildConfig
 import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.data.model.UserDataResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.AddScheduleRequest
+import com.example.fixzy_ketnoikythuatvien.service.model.AddScheduleResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.AvailabilityResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.CategoryResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingRequest
@@ -13,6 +15,8 @@ import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetSummaryStatusResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderResponse
@@ -104,8 +108,10 @@ interface ApiService {
     suspend fun updateBookingStatus(
         @Path("bookingId") bookingId: Int,
         @Body body: StatusUpdateRequest,
+        @Query("rating") rating: Int? = null,
+        @Query("feedback") feedback: String? = null
     ): Response<StatusUpdateResponse>
-    data class StatusUpdateRequest(val status: String,val user_id: Int,val role: String)
+    data class StatusUpdateRequest(val status: String,val user_id: Int,val role: String, val rating: Int? = null,val feedback: String? = null)
     data class StatusUpdateResponse(val success: Boolean, val message: String)
 
     @PUT("user/update")
@@ -134,4 +140,22 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body body: CreateServiceRequest
     ): Call<CreateServiceResponse>
+
+    @GET("service/provider-mode/{serviceId}")
+    fun getModeService(
+        @Header("Authorization") token: String,
+        @Path("serviceId") serviceId: Int
+    ): Call<GetModeServiceResponse>
+
+    @GET("bookings/status-summary")
+    fun getSummaryStatus(
+        @Header("Authorization") token: String
+    ):Call<GetSummaryStatusResponse>
+
+    @POST("service/{serviceId}/schedules")
+    fun addSchedule(
+        @Header("Authorization") token: String,
+        @Path("serviceId") serviceId: Int,
+        @Body body: AddScheduleRequest
+    ): Call<AddScheduleResponse>
 }

@@ -5,10 +5,13 @@ import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.service.TestItem
 import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
+import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetSummaryStatusResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Registration
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
+import com.example.fixzy_ketnoikythuatvien.service.model.SummaryBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.TopTechnician
 
 //định nghĩa các hành động có thể thực hiện
@@ -51,15 +54,18 @@ sealed class Action{
     data class UpdateBooking(
         val userId: Int? = null,
         val serviceId: Int? = null,
+        val serviceName: String? = null,
         val availabilityId: Int? = null,
         val date: String? = null,
         val startTime: String? = null,
+        val duration: Int? = null,
         val address: String? = null,
         val phone: String? = null,
         val notes: String? = null,
         val totalPrice: Double? = null,
         val status: String? = null
     ) : Action()
+
     data class DateForBooking(val date: String) : Action()
     object CreateBooking : Action()
 
@@ -98,4 +104,18 @@ sealed class Action{
     data class CreateServiceFailure(val error: String) : Action()
     object CreateServiceLoading : Action()
 
+
+    data class GetModeServiceSuccess(val data: GetModeServiceResponse) : Action()
+    data class GetModeServiceFailure(val error: String) : Action()
+
+    data class GetSummaryStatusSuccess(
+        val todayBookings: List<SummaryBooking>,
+        val needAction: List<SummaryBooking>
+    ) : Action()
+
+    data class GetSummaryStatusFailure(val error: String) : Action()
+
+    data class AddScheduleSuccess(val message: String) : Action()
+    data class AddScheduleFailure(val error: String) : Action()
+    data class AddScheduleLoading(val message: String? = null) : Action()
 }

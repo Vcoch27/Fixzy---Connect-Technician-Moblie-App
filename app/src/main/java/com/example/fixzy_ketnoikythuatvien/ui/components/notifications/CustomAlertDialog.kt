@@ -10,16 +10,29 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun CustomAlertDialog(
+    title: String?,
     message: String,
     showDialog: Boolean,
-    onDismiss: () -> Unit = {},
+    onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("Thông báo", style = MaterialTheme.typography.titleMedium) },
-            text = { Text(message, style = MaterialTheme.typography.bodyMedium) },
+            title = {
+                if (title != null) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
             confirmButton = {
                 TextButton(onClick = onDismiss) {
                     Text("Đóng")

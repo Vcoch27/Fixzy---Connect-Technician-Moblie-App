@@ -16,6 +16,7 @@ import com.example.fixzy_ketnoikythuatvien.data.model.UserData
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.AuthService
+import com.example.fixzy_ketnoikythuatvien.service.BookingService
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
@@ -24,7 +25,6 @@ private const val TAG = "SplashScreen"
 @Composable
 fun SplashScreen(navController: NavController) {
     val authService = remember { AuthService() }
-
     LaunchedEffect(Unit) {
         Log.d(TAG, "SplashScreen launched")
         delay(1000)

@@ -59,7 +59,7 @@ fun OrdersScreen(
         OrdersTabRow(selectedTabIndex, tabs) { index -> selectedTabIndex = index }
 
         val filteredBookings = when (selectedTabIndex) {
-            0 -> bookings.filter { it.status in listOf("Pending", "Confirmed") } // Upcoming
+            0 -> bookings.filter { it.status in listOf("Pending", "Confirmed","WaitingForCustomerConfirmation") } // Upcoming
             1 -> bookings.filter { it.status in listOf("Completed", "Cancelled") } // History
             2 -> emptyList<DetailBooking>()
             else -> emptyList()
@@ -79,7 +79,8 @@ fun OrdersScreen(
                             bookings[index] = updatedBooking
                         }
                         Store.store.dispatch(Action.UpdateBookingAction(updatedBooking)) // Thêm dòng này
-                    }
+                    },
+                    navController = navController
                 )
             }
         }

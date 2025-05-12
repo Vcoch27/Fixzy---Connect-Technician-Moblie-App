@@ -93,4 +93,6 @@ dependencies {
 
     implementation ("com.cloudinary:cloudinary-android:2.3.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.7.4")
+    implementation ("androidx.compose.runtime:runtime:1.5.0")
 }

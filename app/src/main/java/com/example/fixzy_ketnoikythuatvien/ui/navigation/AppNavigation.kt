@@ -49,6 +49,7 @@
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProfileScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProviderModeScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.ProviderScreen
+    import com.example.fixzy_ketnoikythuatvien.ui.screen.ServiceModeScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.SplashScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.TestScreen
     import com.example.fixzy_ketnoikythuatvien.ui.screen.extendedScreen.AddServiceScreen
@@ -103,6 +104,32 @@
                         ChatScreen(navController)
                     }
                 }
+                composable(
+                    "service_provider_mode/{serviceId}/{service_name}?selectedTab={selectedTab}",
+                    arguments = listOf(
+                        navArgument("serviceId") { type = NavType.IntType },
+                        navArgument("service_name") { type = NavType.StringType; nullable = true },
+                        navArgument("selectedTab") {
+                            type = NavType.IntType
+                            defaultValue = 0
+                            nullable = false
+                        }
+                    )
+                ) { backStackEntry ->
+                    val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: 0
+                    val serviceName = backStackEntry.arguments?.getString("service_name")
+                    val selectedTab = backStackEntry.arguments?.getInt("selectedTab") ?: 0
+
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        ServiceModeScreen(
+                            navController = navController,
+                            serviceId = serviceId,
+                            serviceName = serviceName,
+                            selectedTabFromNav = selectedTab // truyền vào màn hình
+                        )
+                    }
+                }
+
                 composable(
                     "provider_screen/{providerId}",
                     arguments = listOf(navArgument("providerId") { type = NavType.IntType })

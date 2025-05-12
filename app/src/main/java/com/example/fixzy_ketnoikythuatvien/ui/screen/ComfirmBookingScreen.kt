@@ -86,7 +86,9 @@ fun ConfirmBookingScreen(
     CustomAlertDialog(
         message = dialogMessage,
         showDialog = showDialog,
-        onDismiss = { showDialog = false }
+        onDismiss = { showDialog = false },
+        title = "Notification",
+        modifier = Modifier
     )
 
     Scaffold(
