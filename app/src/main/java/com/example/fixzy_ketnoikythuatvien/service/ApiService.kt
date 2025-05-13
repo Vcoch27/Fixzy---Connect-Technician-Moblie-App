@@ -17,6 +17,7 @@ import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetSummaryStatusResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GoogleUserDataRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.RegisterProviderResponse
@@ -158,4 +159,10 @@ interface ApiService {
         @Path("serviceId") serviceId: Int,
         @Body body: AddScheduleRequest
     ): Call<AddScheduleResponse>
+
+    @POST("user/sync-google-user")
+    fun syncGoogleUser(
+        @Header("Authorization") token: String,
+        @Body userData: GoogleUserDataRequest
+    ): Call<ResponseBody>
 }

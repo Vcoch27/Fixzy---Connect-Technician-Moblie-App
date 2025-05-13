@@ -3,6 +3,7 @@ package com.example.fixzy_ketnoikythuatvien.data.model
 import android.util.Log
 import com.google.gson.annotations.SerializedName
 private const val TAG = "AUTH_SERVICE"
+
 data class UserData(
     val id: Int? = null,
     @SerializedName("full_name") val name: String? = null,

@@ -3,6 +3,7 @@ package com.example.fixzy_ketnoikythuatvien.service
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import com.cloudinary.Cloudinary
 import com.cloudinary.Transformation
 import com.cloudinary.android.MediaManager
@@ -80,7 +81,8 @@ class UserService {
         fullName: String?,
         phone: String?,
         address: String?,
-        avatarUrl: String? = "https://res.cloudinary.com/dlkrskgwq/image/upload/v1746646758/fixzy/avatars/apr8ahowuvez4hvjahp8.png"
+        avatarUrl: String? = "https://res.cloudinary.com/dlkrskgwq/image/upload/v1746646758/fixzy/avatars/apr8ahowuvez4hvjahp8.png",
+        context: Context
     ) {
         val firebaseUid = auth.currentUser?.uid
         if (firebaseUid != null) {
@@ -105,7 +107,14 @@ class UserService {
                 Log.e(TAG, "Failed to update profile: ${response.message()}")
                 throw IOException("Failed to update profile: ${response.message()}")
             }else{
-                val authService = AuthService()
+
+
+                val authService = AuthService(
+                    context = context,
+                    activity = null,
+                    onSuccess = null,
+                    onError =null
+                )
                 authService.getUserData()
             }
         } else {

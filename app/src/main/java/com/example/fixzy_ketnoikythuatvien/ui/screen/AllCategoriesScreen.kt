@@ -3,6 +3,7 @@ package com.example.fixzy_ketnoikythuatvien.ui.screen
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -64,21 +65,17 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
 
     Log.d(TAG, "Rendering AllCategoriesScreen: categories=${state.categories.size}, selectedCategory=${state.selectedCategory?.name}, services=${state.services.size}")
 
-    // Debounce và hủy yêu cầu cũ khi category thay đổi
     LaunchedEffect(state.selectedCategory) {
-        // Nếu category không thay đổi, không làm gì
         if (state.selectedCategory == lastSelectedCategory) return@LaunchedEffect
 
-        // Hủy yêu cầu API cũ nếu có
         lastFetchJob?.cancel()
         lastSelectedCategory = state.selectedCategory
 
         state.selectedCategory?.let { category ->
             Log.i(TAG, "Category selected: ${category.name}, fetching services for categoryId=${category.categoryId}")
 
-            // Debounce: chờ 300ms trước khi gọi API
             lastFetchJob = coroutineScope.launch {
-                delay(300) // Debounce 300ms
+                delay(300)
                 try {
                     serviceService.fetchServices(category.categoryId)
                 } catch (e: Exception) {
@@ -103,7 +100,6 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
             ) {
                 when {
                     state.isLoadingCategories -> {
-                        Log.d(TAG, "Categories loading state: isLoadingCategories=true")
                         Text(
                             text = "Đang tải...",
                             modifier = Modifier
@@ -116,7 +112,6 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                     }
 
                     state.categoriesError != null -> {
-                        Log.e(TAG, "Categories error: ${state.categoriesError}")
                         Text(
                             text = "Lỗi: ${state.categoriesError}",
                             modifier = Modifier
@@ -129,19 +124,16 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                     }
 
                     else -> {
-                        Log.d(TAG, "Rendering categories: total=${state.categories.size}, pages=${pagerState.pageCount}")
                         HorizontalPager(
                             state = pagerState,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(320.dp)
+                                .height(300.dp)
                                 .padding(horizontal = 15.dp, vertical = 10.dp)
                         ) { page ->
                             val startIndex = page * 6
                             val endIndex = minOf(startIndex + 6, state.categories.size)
                             val pageCategories = state.categories.subList(startIndex, endIndex)
-                            Log.d(TAG, "Rendering page $page: categories=${pageCategories.map { it.name }}")
-
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(3),
                                 modifier = Modifier.fillMaxSize(),
@@ -153,7 +145,6 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                                         category = category,
                                         typography = LocalAppTypography.current,
                                         onClick = {
-                                            Log.i(TAG, "Category clicked: ${category.name}")
                                             Store.store.dispatch(Action.SelectCategory(category))
                                         }
                                     )
@@ -178,10 +169,9 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+//                        Spacer(modifier = Modifier.height(16.dp))
 
                         state.selectedCategory?.let { category ->
-                            Log.d(TAG, "Rendering services section for category: ${category.name}")
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -223,7 +213,6 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
 
                             when {
                                 state.isLoadingServices -> {
-                                    Log.d(TAG, "Services loading state: isLoadingServices=true")
                                     Text(
                                         text = "Đang tải dịch vụ...",
                                         modifier = Modifier
@@ -236,7 +225,6 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                                 }
 
                                 state.servicesError != null -> {
-                                    Log.e(TAG, "Services error: ${state.servicesError}")
                                     Text(
                                         text = state.servicesError!!,
                                         modifier = Modifier
@@ -249,7 +237,6 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                                 }
 
                                 state.services.isEmpty() -> {
-                                    Log.w(TAG, "No services found for category: ${category.name}")
                                     Text(
                                         text = "Không có dịch vụ nào",
                                         modifier = Modifier
@@ -262,7 +249,6 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                                 }
 
                                 else -> {
-                                    Log.d(TAG, "Rendering services: total=${state.services.size}")
                                     LazyColumn(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -270,7 +256,7 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         items(state.services) { service ->
-                                            ServiceCard(service = service)
+                                            ServiceCard(navController = navController,service = service)
                                         }
                                     }
                                 }
@@ -285,7 +271,7 @@ fun AllCategoriesScreen(navController: NavController, modifier: Modifier = Modif
 
 private const val TAG_SERVICE_CARD = "ServiceCard"
 @Composable
-fun ServiceCard(service: Service) {
+fun ServiceCard(navController: NavController,service: Service) {
     var isFavorite by remember { mutableStateOf(false) }
     Log.d(
         TAG_SERVICE_CARD,
@@ -295,12 +281,13 @@ fun ServiceCard(service: Service) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clickable { navController.navigate("availability_screen/${service.id}?service_name=${service.name}") },
+
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface)
     ) {
-        Log.d(TAG_SERVICE_CARD, "Rendering ServiceCard content for ${service.providerName}")
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -309,7 +296,7 @@ fun ServiceCard(service: Service) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AsyncImage(
-                model = "https://example.com/placeholder.jpg",
+                model = service.avt,
                 contentDescription = "${service.providerName}'s avatar",
                 modifier = Modifier
                     .size(80.dp)
@@ -335,17 +322,23 @@ fun ServiceCard(service: Service) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = service.providerName?:"Unknown",
+                    text = ("TName: " + service.providerName) ?: "Unknown",
                     style = AppTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = AppTheme.colors.onSurface
                 )
 
                 Text(
-                    text = service.name,
+                    text = "Service: ${service.name}",
                     style = AppTheme.typography.bodyMedium,
                     color = AppTheme.colors.onBackgroundVariant
                 )
+                Text(
+                    text = "Duration: ${service.duration}'",
+                    style = AppTheme.typography.bodyMedium,
+                    color = AppTheme.colors.onBackgroundVariant
+                )
+
 
                 Text(
                     text = "${service.price} VND",
@@ -374,18 +367,19 @@ fun ServiceCard(service: Service) {
                         )
                     }
 
-                    Text(
-                        text = String.format("%.1f", service.rating),
-                        style = AppTheme.typography.bodySmall,
-                        color = AppTheme.colors.onBackgroundVariant
-                    )
+//                    Text(
+//                        text = String.format("%.1f", service.rating),
+//                        style = AppTheme.typography.bodySmall,
+//                        color = AppTheme.colors.onBackgroundVariant
+//                    )
 
-                    Text(
-                        text = " | ${service.ordersCompleted} Đơn",
-                        style = AppTheme.typography.bodySmall,
-                        color = AppTheme.colors.onBackgroundVariant
-                    )
+
                 }
+                Text(
+                    text = " Completed: ${service.ordersCompleted}",
+                    style = AppTheme.typography.bodySmall,
+                    color = AppTheme.colors.onBackgroundVariant
+                )
             }
 
             IconButton(onClick = {

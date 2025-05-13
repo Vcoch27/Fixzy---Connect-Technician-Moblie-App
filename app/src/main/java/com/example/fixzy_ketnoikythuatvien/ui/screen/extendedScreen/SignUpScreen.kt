@@ -61,7 +61,12 @@ fun SignUpScreen(
     onBackToLogin: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
-    val authService = remember { AuthService() }
+    val context = LocalContext.current
+
+    val authService = remember { AuthService(context =  context,
+        activity = null,
+        onSuccess = null,
+        onError =null) }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

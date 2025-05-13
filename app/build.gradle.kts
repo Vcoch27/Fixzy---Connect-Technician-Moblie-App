@@ -2,8 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
+//    id ("com.android.application")
+    id ("com.google.gms.google-services")
     id ("kotlin-kapt")
+
 }
 android {
     namespace = "com.example.fixzy_ketnoikythuatvien"
@@ -22,15 +24,19 @@ android {
         getByName("debug") {
             //wifi
             buildConfigField("String", "BASE_URL", "\"http://192.168.1.5:3000/\"")
+            buildConfigField("String", "WEB_CLIENT_ID", "\"417602227592-dr9pfbsml00qndmie5rr42i9rchmr1km.apps.googleusercontent.com\"")
+
         }
         getByName("release") {
             buildConfigField("String", "BASE_URL", "\"https://192.168.1.8:3000/\"")
+            buildConfigField("String", "WEB_CLIENT_ID", "\"417602227592-dr9pfbsml00qndmie5rr42i9rchmr1km.apps.googleusercontent.com\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+
     }
 
     buildFeatures {
@@ -95,4 +101,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation ("androidx.compose.runtime:runtime-livedata:1.7.4")
     implementation ("androidx.compose.runtime:runtime:1.5.0")
+    implementation ("com.google.firebase:firebase-messaging:24.0.0")
+    implementation("com.google.firebase:firebase-auth:23.2.0")
+    implementation ("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
 }

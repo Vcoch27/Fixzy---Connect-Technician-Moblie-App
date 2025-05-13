@@ -57,23 +57,23 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
             Button(
                 onClick = {
                     if (!isOwner) {
-                        selectedService?.let { service ->
-                            Log.d("ProviderScreen", "Selected service: $service")
-                            store.dispatch(
-                                Action.UpdateBooking(
-                                    serviceId = service.service_id,
-                                    userId = state.user?.id,
-                                    address = state.user?.address,
-                                    phone = state.user?.phone,
-                                    totalPrice = service.service_price.toDoubleOrNull()
-                                )
-                            )
-                            Log.d("ProviderScreen", "Dispatched UpdateBooking for serviceId: ${service.service_id}")
-
-                            val encodedName = URLEncoder.encode(service.service_name, "UTF-8").replace("+", "%20")
-                            navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
-                            Log.d("ProviderScreen", "Navigated to availability_screen with serviceId: ${service.service_id}")
-                        }
+//                        selectedService?.let { service ->
+//                            Log.d("ProviderScreen", "Selected service: $service")
+//                            store.dispatch(
+//                                Action.UpdateBooking(
+//                                    serviceId = service.service_id,
+//                                    userId = state.user?.id,
+//                                    address = state.user?.address,
+//                                    phone = state.user?.phone,
+//                                    totalPrice = service.service_price.toDoubleOrNull()
+//                                )
+//                            )
+//                            Log.d("ProviderScreen", "Dispatched UpdateBooking for serviceId: ${service.service_id}")
+//
+//                            val encodedName = URLEncoder.encode(service.service_name, "UTF-8").replace("+", "%20")
+//                            navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
+//                            Log.d("ProviderScreen", "Navigated to availability_screen with serviceId: ${service.service_id}")
+//                        }
                     } else {
                         navController.navigate("add_service_screen")
                     }
@@ -94,7 +94,7 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isOwner) "Add service" else "Continue to Book",
+                    text = if (isOwner) "Add service" else "",
                     color = Color.White,
                     fontSize = 16.sp
                 )
@@ -400,7 +400,7 @@ fun ServiceCardd(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { if(isOwner) (navController.navigate("service_provider_mode/${service.service_id}/${service.service_name}"))else onSelect() },
+            .clickable { if(isOwner) (navController.navigate("service_provider_mode/${service.service_id}/${service.service_name}"))else (navController.navigate("availability_screen/${service.service_id}?service_name=${service.service_name}")) },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
@@ -468,16 +468,16 @@ fun ServiceCardd(
                     )
                 }
             }
-            if (!isOwner) {
-                RadioButton(
-                    selected = isSelected,
-                    onClick = { onSelect() },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = AppTheme.colors.mainColor,
-                        unselectedColor = AppTheme.colors.onBackgroundVariant
-                    )
-                )
-            }
+//            if (!isOwner) {
+//                RadioButton(
+//                    selected = isSelected,
+//                    onClick = { onSelect() },
+//                    colors = RadioButtonDefaults.colors(
+//                        selectedColor = AppTheme.colors.mainColor,
+//                        unselectedColor = AppTheme.colors.onBackgroundVariant
+//                    )
+//                )
+//            }
         }
     }
 }

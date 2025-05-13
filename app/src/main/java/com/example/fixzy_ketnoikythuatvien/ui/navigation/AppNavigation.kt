@@ -77,9 +77,20 @@
                 startDestination = "splash_screen",
                 modifier = Modifier.padding(paddingValues)
             ) {
+                // Authentication (Màn hình xác thực)
                 composable("splash_screen") {
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         SplashScreen(navController)
+                    }
+                }
+                composable("login_screen") {
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        LoginScreen(
+                            navController = navController,
+                            onNavigateToHome = { navController.navigate("home_page") },
+                            onSignUpClick = { navController.navigate("signup_screen") },
+                            onForgotPasswordClick = { /* handle forgot */ }
+                        )
                     }
                 }
                 composable("signup_screen") {
@@ -90,20 +101,20 @@
                         )
                     }
                 }
-                composable("login_screen") {
+
+                // Home & Categories (Màn hình chính và danh mục)
+                composable("home_page") {
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
-                        LoginScreen(
-                            onNavigateToHome = { navController.navigate("home_page") },
-                            onSignUpClick = { navController.navigate("signup_screen") },
-                            onForgotPasswordClick = { /* handle forgot */ }
-                        )
+                        ProductHomePageScreen(modifier = Modifier, navController = navController)
                     }
                 }
-                composable("chat_page") {
+                composable("all_categories") {
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
-                        ChatScreen(navController)
+                        AllCategoriesScreen(navController = navController)
                     }
                 }
+
+                // Service & Provider (Màn hình dịch vụ và nhà cung cấp)
                 composable(
                     "service_provider_mode/{serviceId}/{service_name}?selectedTab={selectedTab}",
                     arguments = listOf(
@@ -119,7 +130,6 @@
                     val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: 0
                     val serviceName = backStackEntry.arguments?.getString("service_name")
                     val selectedTab = backStackEntry.arguments?.getInt("selectedTab") ?: 0
-
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         ServiceModeScreen(
                             navController = navController,
@@ -129,7 +139,6 @@
                         )
                     }
                 }
-
                 composable(
                     "provider_screen/{providerId}",
                     arguments = listOf(navArgument("providerId") { type = NavType.IntType })
@@ -138,6 +147,13 @@
                         ProviderScreen(navController = navController, providerId = it.arguments?.getInt("providerId") ?: 0)
                     }
                 }
+                composable("add_service_screen") {
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        AddServiceScreen(navController)
+                    }
+                }
+
+                // Booking (Màn hình đặt lịch)
                 composable(
                     "availability_screen/{serviceId}?service_name={service_name}",
                     arguments = listOf(
@@ -177,6 +193,13 @@
                         BookingSuccessScreen(referenceCode = referenceCode, navController = navController)
                     }
                 }
+
+                // Chat (Màn hình trò chuyện)
+                composable("chat_page") {
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        ChatScreen(navController)
+                    }
+                }
                 composable("chat_screen/{userName}") { backStackEntry ->
                     val userName = backStackEntry.arguments?.getString("userName") ?: ""
                     val chat = dummyChats.find { it.userName == userName }
@@ -190,27 +213,8 @@
                         }
                     }
                 }
-                composable("home_page") {
-                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
-                        ProductHomePageScreen(modifier = Modifier, navController = navController)
-                    }
-                }
-                composable("all_categories") {
-                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
-                        AllCategoriesScreen(navController = navController)
-                    }
-                }
-                composable("orders_page") {
-                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
-                        OrdersScreen(navController)
-                    }
-                }
-                composable("notifications_page") {
-                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
-                        NotificationScreen(navController)
-                    }
-                }
 
+                //  Profile (Màn hình hồ sơ)
                 composable("profile_page") {
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         ProfileScreen(
@@ -219,8 +223,7 @@
                         )
                     }
                 }
-
-                composable("edit_profile_screen"){
+                composable("edit_profile_screen") {
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         EditProfileScreen(
                             navController
@@ -228,23 +231,34 @@
                     }
                 }
 
+                // Notifications (Màn hình thông báo)
+                composable("notifications_page") {
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        NotificationScreen(navController)
+                    }
+                }
+
+                // Orders (Màn hình đơn hàng)
+                composable("orders_page") {
+                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
+                        OrdersScreen(navController)
+                    }
+                }
+
+                // Provider Mode (Màn hình chế độ nhà cung cấp)
                 composable("provider_mode_page") {
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         ProviderModeScreen(navController)
                     }
                 }
-                composable("add_service_screen") {
-                    SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
-                        AddServiceScreen(navController)
-                    }
-                }
+
+                // Nhóm 10: Miscellaneous (Màn hình khác)
                 composable("test_page") {
                     val viewModel: TestViewModel = viewModel()
                     SwipeBackWrapper(navController = navController, modifier = Modifier.fillMaxSize()) {
                         TestScreen(viewModel = viewModel)
                     }
                 }
-
             }
         }
     }

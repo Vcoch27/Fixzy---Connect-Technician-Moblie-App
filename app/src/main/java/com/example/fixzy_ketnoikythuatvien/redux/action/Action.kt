@@ -118,4 +118,9 @@ sealed class Action{
     data class AddScheduleSuccess(val message: String) : Action()
     data class AddScheduleFailure(val error: String) : Action()
     data class AddScheduleLoading(val message: String? = null) : Action()
+
+    // Google Sign-In Actions
+    object SyncGoogleUserLoading : Action()
+    data class SyncGoogleUserSuccess(val message: String) : Action()
+    data class SyncGoogleUserFailure(val error: String) : Action()
 }

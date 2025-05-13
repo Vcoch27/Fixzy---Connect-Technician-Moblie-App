@@ -153,35 +153,22 @@ class ServiceService {
         }
     }
 
-
     suspend fun fetchServices(categoryId: Int) {
         Log.i(TAG, "=== fetchServices() STARTED for categoryId=$categoryId ===")
         store.dispatch(Action.FetchServicesRequest)
-        Log.d(TAG, "Dispatch: FetchServicesRequest")
-
         try {
             val response = apiService.getServicesByCategory(categoryId)
-            Log.d(
-                TAG,
-                "API response: success=${response.success}, data size=${response.data?.size ?: 0}"
-            )
-            response.data.forEach { service ->
-                Log.d(TAG, "Service: name=${service.name}, providerName=${service.providerName}")
-            }
-
+            Log.e(TAG, "fetching services: $response")
             if (response.success) {
-                Log.i(TAG, "Services fetched successfully: ${response.data.size} items")
                 store.dispatch(Action.FetchServicesSuccess(response.data))
-                Log.d(TAG, "Dispatch: FetchServicesSuccess")
+                Log.e(TAG, "fetching services:have")
             } else {
                 store.dispatch(Action.FetchServicesSuccess(emptyList()))
-                Log.d(TAG, "Dispatch: FetchServicesSuccess with empty list")
+                Log.e(TAG, "fetching services:null")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching services", e)
-            store.dispatch(Action.FetchServicesFailure("Error: ${e.message}"))
+            Log.e(TAG, "fetchServices ERROR", e)
+            store.dispatch(Action.FetchServicesFailure("Error: ${e.message ?: "Unknown error"}"))
         }
     }
-
-
 }

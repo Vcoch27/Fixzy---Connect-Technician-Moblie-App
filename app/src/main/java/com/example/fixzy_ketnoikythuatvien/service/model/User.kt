@@ -16,3 +16,13 @@ data class UpdateProfileResponse(
     @SerializedName("message") val message: String,
 )
 
+data class GoogleUserDataRequest(
+    @SerializedName("firebase_uid") val id: String,
+    @SerializedName("email") val email: String,
+    @SerializedName("full_name") val name: String?,
+    @SerializedName("phone") val phone: String?,
+    @SerializedName("address") val address: String?,
+    @SerializedName("avatar_url") val avatarUrl: String,
+//    @SerializedName("role") val role: String = "user"
+
+)

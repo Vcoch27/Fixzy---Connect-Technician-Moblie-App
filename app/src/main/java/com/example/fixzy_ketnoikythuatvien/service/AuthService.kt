@@ -1,6 +1,16 @@
 // service/AuthService.kt
+@file:Suppress("DEPRECATION")
+
 package com.example.fixzy_ketnoikythuatvien.service
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,8 +28,19 @@ import retrofit2.Callback
 import retrofit2.Response
 import okhttp3.ResponseBody
 import org.json.JSONObject
+import com.example.fixzy_ketnoikythuatvien.BuildConfig
+import com.example.fixzy_ketnoikythuatvien.R
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.fixzy_ketnoikythuatvien.service.model.GoogleUserDataRequest
 
-class AuthService {
+@Suppress("DEPRECATION")
+class AuthService(
+    private val context: Context,
+    private val activity: Activity?,
+    private val onSuccess: ((UserData) -> Unit)?,
+    private val onError: ((String) -> Unit)?,
+) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val store = Store.Companion.store
@@ -27,7 +48,148 @@ class AuthService {
 
     private val apiService = ApiClient.apiService
     private var isFetchingUserData = false
-    val providerService =  ProviderService()
+
+    private val signInClient: GoogleSignInClient by lazy {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(BuildConfig.WEB_CLIENT_ID)
+            .requestEmail()
+            .build()
+        Log.d("AuthDebug", "GoogleSignInClient created with WEB_CLIENT_ID: ${BuildConfig.WEB_CLIENT_ID}")
+        Log.d("AuthDebug", "Google Sign-In Options: $gso")
+        GoogleSignIn.getClient(context, gso)
+
+    }
+
+    fun launchGoogleSignIn(launcher: androidx.activity.result.ActivityResultLauncher<Intent>) {
+        Log.d("AuthDebug", "Launching Google Sign-In")
+        val signInIntent = signInClient.signInIntent
+        launcher.launch(signInIntent)
+    }
+
+    fun handleGoogleSignInResult(
+        result: ActivityResult,
+        onSuccess: (UserData) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        Log.d("AuthDebug", "Handling Google Sign-In result: resultCode=${result.resultCode}")
+        if (result.resultCode == Activity.RESULT_OK) {
+            try {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+                Log.d("AuthDebug", "Google account: ${account?.email}, idToken: ${idToken?.take(10)}...")
+                if (idToken != null) {
+                    firebaseAuthWithGoogle(idToken, onSuccess, onError)
+                } else {
+                    Log.e("AuthDebug", "ID Token is null. Ensure WEB_CLIENT_ID is correct.")
+                    onError("ID Token null")
+                }
+            } catch (e: ApiException) {
+                Log.e("AuthDebug", "Google Sign-In failed: ${e.statusCode} - ${e.localizedMessage}")
+                onError("Google Sign-In thất bại: ${e.localizedMessage}")
+            }
+        } else {
+            Log.w("AuthDebug", "Google Sign-In canceled or failed, resultCode=${result.resultCode}")
+            onError("Đăng nhập Google đã bị hủy")
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(
+        idToken: String,
+        onSuccess: (UserData) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        Log.d("AuthDebug", "Authenticating with Firebase using ID Token...")
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        Log.d("AuthDebug", "Firebase credential: $credential")
+        auth.signInWithCredential(credential)
+            .addOnSuccessListener {
+                val user = auth.currentUser
+                Log.d("AuthDebug", "Firebase sign-in success. Current user: ${user?.email}")
+                if (user != null) {
+                    val userData = UserData(
+                        name = user.displayName ?: "",
+                        email = user.email ?: "",
+                        firebase_uid = user.uid,
+                        phone = user.phoneNumber ?: "",
+                        address = null,
+                        avatarUrl = user.photoUrl?.toString(),
+                        role = "user"
+                    )
+                    Log.d("AuthDebug", "Syncing user data with backend: $userData")
+                    store.dispatch(Action.SyncGoogleUserLoading)
+
+                    // Lưu vào Firestore ngay lập tức
+                    firestore.collection("users")
+                        .document(user.uid)
+                        .set(userData)
+                        .addOnSuccessListener {
+                            Log.d("AuthDebug", "User data saved successfully to Firestore")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("AuthDebug", "Failed to save user data to Firestore: ${e.message}")
+                        }
+
+                    // Lấy token và đồng bộ với backend
+                    user.getIdToken(false).addOnSuccessListener { tokenResult ->
+                        val firebaseToken = tokenResult.token
+                        Log.d("AuthDebug", "Firebase token retrieved: ${firebaseToken?.take(10)}...")
+                        
+                        if (firebaseToken == null) {
+                            Log.e("AuthDebug", "Firebase token is null")
+                            store.dispatch(Action.SyncGoogleUserFailure("Không thể lấy token xác thực"))
+                            onError("Không thể lấy token xác thực")
+                            return@addOnSuccessListener
+                        }
+
+                        apiService.syncGoogleUser(
+                            "Bearer $firebaseToken",
+                            GoogleUserDataRequest(
+                                id = user.uid,
+                                email = user.email ?: "",
+                                name = user.displayName,
+                                phone = user.phoneNumber,
+                                address = "",
+                                avatarUrl = user.photoUrl?.toString() ?: ""
+                            )
+                        ).enqueue(object : Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                if (response.isSuccessful) {
+                                    Log.d("AuthDebug", "User data synced successfully with backend")
+                                    store.dispatch(Action.SyncGoogleUserSuccess("Đồng bộ người dùng thành công"))
+                                    onSuccess(userData)
+                                    getUserData()
+                                } else {
+                                    val errorBody = response.errorBody()?.string()
+                                    Log.e("AuthDebug", "Backend sync failed: ${response.code()} - $errorBody")
+                                    store.dispatch(Action.SyncGoogleUserFailure("Đồng bộ dữ liệu thất bại: ${errorBody ?: response.message()}"))
+                                    onError("Đồng bộ dữ liệu thất bại: ${errorBody ?: response.message()}")
+                                }
+                            }
+
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                Log.e("AuthDebug", "Backend sync failed: ${t.message}")
+                                store.dispatch(Action.SyncGoogleUserFailure("Lỗi kết nối: ${t.message}"))
+                                onError("Lỗi kết nối: ${t.message}")
+                            }
+                        })
+                    }.addOnFailureListener { e ->
+                        Log.e("AuthDebug", "Failed to get Firebase token: ${e.message}")
+                        store.dispatch(Action.SyncGoogleUserFailure("Không thể lấy token xác thực: ${e.message}"))
+                        onError("Không thể lấy token xác thực: ${e.message}")
+                    }
+                } else {
+                    Log.e("AuthDebug", "User is null after Firebase sign-in")
+                    store.dispatch(Action.SyncGoogleUserFailure("Người dùng null sau khi xác thực"))
+                    onError("Người dùng null sau khi xác thực")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthDebug", "Firebase authentication failed: ${e.message}")
+                store.dispatch(Action.SyncGoogleUserFailure("Xác thực Firebase thất bại: ${e.message}"))
+                onError("Xác thực Firebase thất bại: ${e.message}")
+            }
+    }
 
     fun getUserData() {
         Log.d(TAG, "-------------getUserData called-----------")
@@ -50,7 +212,10 @@ class AuthService {
         Log.d(TAG, "Dispatch FetchUserDataStart completed")
 
         apiService.getUserData(firebaseUid).enqueue(object : Callback<UserDataResponse> {
-            override fun onResponse(call: Call<UserDataResponse>, response: Response<UserDataResponse>) {
+            override fun onResponse(
+                call: Call<UserDataResponse>,
+                response: Response<UserDataResponse>,
+            ) {
                 isFetchingUserData = false
                 Log.d(TAG, "GetUserData response received with code: ${response.code()}")
 
@@ -106,15 +271,19 @@ class AuthService {
             }
         })
     }
+
     fun signUp(
         email: String,
         password: String,
         name: String,
         phone: String?,
         onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
     ) {
-        Log.i(TAG, "Starting signUp with email: $email, name: $name, phone: $phone") // Log thông tin đầu vào
+        Log.i(
+            TAG,
+            "Starting signUp with email: $email, name: $name, phone: $phone"
+        ) // Log thông tin đầu vào
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -131,7 +300,10 @@ class AuthService {
                             avatarUrl = null,
                             role = "user"
                         )
-                        Log.i(TAG, "Saving userData to Firestore: $userData") // Log trước khi lưu vào Firestore
+                        Log.i(
+                            TAG,
+                            "Saving userData to Firestore: $userData"
+                        ) // Log trước khi lưu vào Firestore
                         firestore.collection("users")
                             .document(user.uid)
                             .set(userData)
@@ -158,7 +330,7 @@ class AuthService {
     private fun syncUserWithBackend(
         userData: UserData,
         onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
     ) {
         Log.i(TAG, "Starting syncUserWithBackend with userData: $userData")
         val gson = Gson()
@@ -187,12 +359,11 @@ class AuthService {
         })
     }
 
-    // Đăng nhập
     fun login(
         email: String,
         password: String,
         onSuccess: (UserData) -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
     ) {
         Log.i(TAG, "Starting login with email: $email")
         auth.signInWithEmailAndPassword(email, password)
@@ -216,7 +387,10 @@ class AuthService {
                                     onError("Failed to retrieve ID Token")
                                 }
                             } else {
-                                Log.e(TAG, "Failed to retrieve ID Token: ${tokenTask.exception?.message}")
+                                Log.e(
+                                    TAG,
+                                    "Failed to retrieve ID Token: ${tokenTask.exception?.message}"
+                                )
                                 onError("Failed to retrieve ID Token: ${tokenTask.exception?.message}")
                             }
                         }
@@ -230,10 +404,11 @@ class AuthService {
                 }
             }
     }
+
     fun authenticateWithBackend(
         idToken: String,
         onSuccess: (UserData) -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
     ) {
         Log.i(TAG, "Authenticating with backend using ID Token")
         apiService.authenticate("Bearer $idToken").enqueue(object : Callback<UserData> {
@@ -269,5 +444,14 @@ class AuthService {
                 onError("Failed to authenticate with backend: ${t.message}")
             }
         })
+    }
+
+    companion object {
+        const val RC_SIGN_IN = 9001
+    }
+
+    init {
+        Log.d("AuthDebug", "Checking Google Services configuration...")
+        Log.d("AuthDebug", "Package name: ${context.packageName}")
     }
 }

@@ -48,18 +48,16 @@ data class ServiceResponse(
 )
 
 data class Service(
-    @SerializedName("service_id") val serviceId: Int,
-    @SerializedName("category_id") val categoryId: Int,
-    @SerializedName("provider_id") val providerId: Int,
-    val name: String,
-    val price: String,
-    val description: String,
-    @SerializedName("created_at") val createdAt: String,
-    val rating: Double,
+   @SerializedName("service_id") val id: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("description") val description: String?,
+    @SerializedName("price") val price: String,
+    @SerializedName("duration") val duration: Int,
+    @SerializedName("rating") val rating: Double,
     @SerializedName("orders_completed") val ordersCompleted: Int,
     @SerializedName("category_name") val categoryName: String,
-    @SerializedName("provider_name") val providerName: String?,
-    @SerializedName("provider_rating") val providerRating: Double
+    @SerializedName("provider_name") val providerName: String,
+    @SerializedName("avt") val avt: String,
 )
 
 

@@ -29,7 +29,6 @@ import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
-import com.example.fixzy_ketnoikythuatvien.service.AuthService
 import com.example.fixzy_ketnoikythuatvien.service.UserService
 import com.example.fixzy_ketnoikythuatvien.ui.components.publicComponents.TopBar
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
@@ -228,7 +227,8 @@ fun EditProfileScreen(
                                     fullName = fullName.takeIf { it.isNotEmpty() },
                                     phone = phone.takeIf { it.isNotEmpty() },
                                     address = address.takeIf { it.isNotEmpty() },
-                                    avatarUrl = finalAvatarUrl.takeIf { it.isNotEmpty() }
+                                    avatarUrl = finalAvatarUrl.takeIf { it.isNotEmpty() },
+                                    context = context
                                 )
 
                                 navController.popBackStack()
