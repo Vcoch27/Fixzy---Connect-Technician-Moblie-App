@@ -7,6 +7,8 @@ import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetSummaryStatusResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.Notification
+import com.example.fixzy_ketnoikythuatvien.service.model.ProviderBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Registration
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
@@ -65,7 +67,7 @@ sealed class Action{
         val totalPrice: Double? = null,
         val status: String? = null
     ) : Action()
-
+    data class UpdateTempPrice(val price: String) : Action()
     data class DateForBooking(val date: String) : Action()
     object CreateBooking : Action()
 
@@ -123,4 +125,13 @@ sealed class Action{
     object SyncGoogleUserLoading : Action()
     data class SyncGoogleUserSuccess(val message: String) : Action()
     data class SyncGoogleUserFailure(val error: String) : Action()
+
+    //notification
+    data class GetNotificationsSuccess(val notifications: List<Notification>) : Action()
+    data class GetNotificationsFailure(val error: String) : Action()
+    object GetNotificationsLoading : Action()
+
+    data class GetProviderBookingSuccess(val bookings: List<ProviderBooking>) : Action()
+    data class GetProviderBookingFailure(val error: String) : Action()
+    object GetProviderBookingLoading : Action()
 }

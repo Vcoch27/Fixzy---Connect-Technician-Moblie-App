@@ -102,17 +102,22 @@ fun AvailabilityScreen(
                         Log.d("AvailabilityScreen", convertDateFormat(availability.date))
                         store.dispatch(
                             Action.UpdateBooking(
+                                serviceId= availability.service_id,
                                 availabilityId = availability.availability_id,
 //                                date = convertDateFormat(availability.date),
-                                startTime = availability.start_time
+                                startTime = availability.start_time,
+                                serviceName = decodedName,
+                                totalPrice = state.tempPrice?.toDouble()
+
                             )
                         )
 //                        store.dispatch(
 //                            Action.DateForBooking(availability.date)
 //                        )
                         Log.e("AvailabilityScreen", "Continue clicked")
-                        navController.navigate("confirm_booking_screen?service_name=${serviceName}?date=${convertDateFormat(availability.date)}")
-                    } ?: run {
+                        navController.navigate(
+                            "confirm_booking_screen?service_name=${serviceName}&date=${availability.date}}"
+                        )                    } ?: run {
                         Log.w("AvailabilityScreen", "Continue clicked but no availability selected")
                     }
                 },

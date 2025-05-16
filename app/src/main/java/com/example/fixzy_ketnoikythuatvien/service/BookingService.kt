@@ -12,6 +12,7 @@ import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateBookingResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetProviderBookingsResponse
 import retrofit2.Response
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -188,8 +189,8 @@ class BookingService {
     suspend fun updateBookingStatus(
         bookingId: Int,
         status: String,
-        rating: Int?=0,
-        feedback: String?="no feedback",
+        rating: Int? = 0,
+        feedback: String? = "no feedback",
     ): Boolean {
         store.dispatch(Action.UpdateBookingStatus)
         Log.d(TAG, "Updating booking status for bookingId=$bookingId, status=$status")
@@ -243,19 +244,20 @@ class BookingService {
                 TAG,
                 "Sending request with userId=$userId, role=$role, bookingId=$bookingId, status=$status"
             )
-            val response: Response<ApiService.StatusUpdateResponse> = if (status == "Completed" && role == "user") {
-                apiService.updateBookingStatus(
-                    bookingId,
-                    ApiService.StatusUpdateRequest(status, userId, role),
-                    rating,
-                    feedback
-                )
-            } else {
-                apiService.updateBookingStatus(
-                    bookingId,
-                    ApiService.StatusUpdateRequest(status, userId, role)
-                )
-            }
+            val response: Response<ApiService.StatusUpdateResponse> =
+                if (status == "Completed" && role == "user") {
+                    apiService.updateBookingStatus(
+                        bookingId,
+                        ApiService.StatusUpdateRequest(status, userId, role),
+                        rating,
+                        feedback
+                    )
+                } else {
+                    apiService.updateBookingStatus(
+                        bookingId,
+                        ApiService.StatusUpdateRequest(status, userId, role)
+                    )
+                }
             if (response.isSuccessful && response.body()?.success == true) {
                 val message = response.body()?.message ?: "Cập nhật trạng thái thành công."
                 Log.d(TAG, "Booking status updated successfully: $message")
@@ -346,6 +348,43 @@ class BookingService {
                 store.dispatch(Action.GetSummaryStatusFailure("Lỗi: ${e.message}"))
             }
         }
+    }
+
+    fun getProviderBookings() {
+        val userId = Store.stateFlow.value.user?.id
+        if (userId == null) {
+            Log.w("GetProviderBookings", "User ID is null, cannot fetch bookings")
+            store.dispatch(Action.GetProviderBookingFailure("Người dùng chưa đăng nhập"))
+            return
+        }
+
+        apiService.getProviderBookings(userId).enqueue(object : Callback<GetProviderBookingsResponse> {
+            override fun onResponse(
+                call: Call<GetProviderBookingsResponse>,
+                response: Response<GetProviderBookingsResponse>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (it.success) {
+                            store.dispatch(Action.GetProviderBookingSuccess(it.data))
+                        } else {
+                            store.dispatch(Action.GetProviderBookingFailure("Không có dữ liệu"))
+                        }
+                    } ?: run {
+                        store.dispatch(Action.GetProviderBookingFailure("Dữ liệu trả về rỗng"))
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("GetProviderBookings", "API error: $errorBody")
+                    store.dispatch(Action.GetProviderBookingFailure("Lỗi: ${errorBody ?: response.message()}"))
+                }
+            }
+
+            override fun onFailure(call: Call<GetProviderBookingsResponse>, t: Throwable) {
+                Log.e("GetProviderBookings", "Network error: ${t.message}", t)
+                store.dispatch(Action.GetProviderBookingFailure("Lỗi: ${t.message ?: "Không thể kết nối"}"))
+            }
+        })
     }
 
     private suspend fun getFirebaseToken(): String? = suspendCancellableCoroutine { continuation ->

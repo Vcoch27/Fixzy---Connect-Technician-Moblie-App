@@ -130,7 +130,7 @@ class Reducer {
                     state.copy(
                         isLoadingServices = false,
                         services = action.services,
-                        servicesError = if(action.services.isEmpty()) "Không có dịch vụ nào" else null
+                        servicesError = if (action.services.isEmpty()) "Không có dịch vụ nào" else null
                     )
                 }
 
@@ -179,7 +179,7 @@ class Reducer {
                 )
 
                 is Action.SelectService -> state.copy(selectedService = action.service)
-
+                is Action.UpdateTempPrice -> state.copy(tempPrice = action.price)
                 is Action.UpdateBooking -> {
                     Log.d(TAG, "UpdateBooking serviceId=${action.serviceId}")
 
@@ -426,6 +426,38 @@ class Reducer {
                 is Action.AddScheduleLoading -> {
                     state.copy(isLoading = true, newScheduleId = null)
                 }
+
+                is Action.GetNotificationsSuccess -> {
+                    Log.d(TAG, "GetNotificationsSuccess: ${action.notifications}")
+                    state.copy(
+                        notifications = action.notifications,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+
+                is Action.GetNotificationsFailure -> {
+                    state.copy(
+                        isLoading = false,
+                        error = action.error
+                    )
+                }
+
+                is Action.GetProviderBookingSuccess -> {
+                    state.copy(
+                        providerBookings = action.bookings,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+
+                is Action.GetProviderBookingFailure -> {
+                    state.copy(
+                        isLoading = false,
+                        error = action.error
+                    )
+                }
+
 
                 else -> {
                     Log.w(TAG, "Action không được xử lý: $action")

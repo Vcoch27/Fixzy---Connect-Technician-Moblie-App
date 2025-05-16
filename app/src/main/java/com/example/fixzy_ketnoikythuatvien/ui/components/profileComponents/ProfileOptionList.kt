@@ -13,8 +13,11 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
+import com.example.fixzy_ketnoikythuatvien.service.AuthService
+import com.example.fixzy_ketnoikythuatvien.service.UserService
 
 @Composable
 fun ProfileOptionList(
@@ -30,6 +33,14 @@ fun ProfileOptionList(
         ProfileOption("Provider mode", Icons.AutoMirrored.Filled.Help),
         ProfileOption("Logout", Icons.AutoMirrored.Filled.Logout)
     )
+    val context = LocalContext.current
+    val authService = AuthService(
+        context = context,
+        activity = null,
+        onSuccess = null,
+        onError =null
+    )
+    authService.getUserData()
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
@@ -41,10 +52,8 @@ fun ProfileOptionList(
                         "Edit Profile" -> {
                             onEditProfile()
                         }
-
                         "Notification" -> { /* Handle notification */
                         }
-
                         "Payment method" -> { /* Handle payment */
                         }
 

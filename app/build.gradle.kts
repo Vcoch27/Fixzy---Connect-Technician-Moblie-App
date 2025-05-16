@@ -23,12 +23,12 @@ android {
     buildTypes {
         getByName("debug") {
             //wifi
-            buildConfigField("String", "BASE_URL", "\"http://192.168.1.5:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.9:3000/\"")
             buildConfigField("String", "WEB_CLIENT_ID", "\"417602227592-dr9pfbsml00qndmie5rr42i9rchmr1km.apps.googleusercontent.com\"")
 
         }
         getByName("release") {
-            buildConfigField("String", "BASE_URL", "\"https://192.168.1.8:3000/\"")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.9:3000/\"")
             buildConfigField("String", "WEB_CLIENT_ID", "\"417602227592-dr9pfbsml00qndmie5rr42i9rchmr1km.apps.googleusercontent.com\"")
             isMinifyEnabled = false
             proguardFiles(
@@ -105,5 +105,5 @@ dependencies {
     implementation("com.google.firebase:firebase-auth:23.2.0")
     implementation ("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.android.gms:play-services-auth:21.3.0")
-
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
 }

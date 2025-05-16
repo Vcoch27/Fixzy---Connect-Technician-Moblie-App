@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import android.Manifest
+import androidx.annotation.RequiresApi
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.BookingService
@@ -27,12 +28,15 @@ import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import com.example.fixzy_ketnoikythuatvien.utils.NotificationHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 @Composable
 fun ConfirmBookingScreen(
     navController: NavController,
     serviceName: String?,
-    date: String?
+    date: String?,
 ) {
     val state by Store.stateFlow.collectAsState()
     val store = Store.store
@@ -73,7 +77,7 @@ fun ConfirmBookingScreen(
             Log.d("ConfirmBookingScreen", "Reference Code: ${state.referenceCode}")
             dialogMessage = "Đặt lịch thành công! Mã: ${state.referenceCode}"
             showDialog = true
-            NotificationHelper.showBookingSuccessNotification(context, state.referenceCode!!)
+//            NotificationHelper.showBookingSuccessNotification(context, state.referenceCode!!)
             delay(2000)
             showDialog = false
             navController.navigate("orders_page") {
@@ -99,7 +103,9 @@ fun ConfirmBookingScreen(
                     Text(
                         text = error,
                         color = Color.Red,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                     )
                 }
                 Button(
@@ -115,10 +121,10 @@ fun ConfirmBookingScreen(
                                     availabilityId = state.booking?.availabilityId,
                                     address = address,
                                     phone = phone,
-                                    notes = notes.takeIf { it.isNotBlank() }
+                                    notes = notes.takeIf { it.isNotBlank() },
                                 )
                                 Log.d("ConfirmBookingScreen", "Booking created successfully")
-                                showDialog = false // Đóng dialog ngay sau khi gọi API
+                                showDialog = false
                             } catch (e: Exception) {
                                 dialogMessage = "Lỗi: ${e.message}"
                                 showDialog = true
@@ -128,7 +134,9 @@ fun ConfirmBookingScreen(
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colors.mainColor),
                     enabled = isFormValid && !state.isCreatingBooking
                 ) {
@@ -142,7 +150,10 @@ fun ConfirmBookingScreen(
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(text = "Confirm Booking", style = AppTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -150,9 +161,9 @@ fun ConfirmBookingScreen(
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(text = "Booking Details", style = AppTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     BookingInfoItem("Service", serviceName ?: "N/A")
-                    BookingInfoItem("Date", date ?: "N/A")
-                    BookingInfoItem("Time", state.booking?.startTime ?: "N/A")
-                    BookingInfoItem("Total Price", state.booking?.totalPrice?.let { "$%.2f".format(it) } ?: "N/A")
+                    BookingInfoItem("Date", "${date?.let { formatIsoDateToDDMMYYYY(it) }}" ?: "N/A")
+                    BookingInfoItem("Time", formatTimeHHmm(state.booking?.startTime ?: "") ?: "N/A")
+//                    BookingInfoItem("Total Price", state.booking?.totalPrice?.let { "$%.2f".format(it) } ?: "N/A")
                 }
             }
             Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
@@ -198,5 +209,30 @@ fun BookingInfoItem(label: String, value: String) {
     ) {
         Text(text = label, style = MaterialTheme.typography.bodyMedium)
         Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+
+fun formatIsoDateToDDMMYYYY(dateString: String): String {
+    return try {
+        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        isoFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+        val date: Date = isoFormat.parse(dateString) ?: return "Invalid date"
+        val desiredFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        desiredFormat.format(date)
+    } catch (e: Exception) {
+        "Invalid date"
+    }
+}
+
+fun formatTimeHHmm(time: String): String {
+    return try {
+        val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        val date = timeFormat.parse(time) ?: return "Invalid time"
+        val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        outputFormat.format(date)
+    } catch (e: Exception) {
+        "Invalid time"
     }
 }

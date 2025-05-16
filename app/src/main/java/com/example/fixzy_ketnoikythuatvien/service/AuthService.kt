@@ -31,6 +31,7 @@ import org.json.JSONObject
 import com.example.fixzy_ketnoikythuatvien.BuildConfig
 import com.example.fixzy_ketnoikythuatvien.R
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.fixzy_ketnoikythuatvien.service.model.GoogleUserDataRequest
 
@@ -60,10 +61,11 @@ class AuthService(
 
     }
 
-    fun launchGoogleSignIn(launcher: androidx.activity.result.ActivityResultLauncher<Intent>) {
-        Log.d("AuthDebug", "Launching Google Sign-In")
-        val signInIntent = signInClient.signInIntent
-        launcher.launch(signInIntent)
+    fun launchGoogleSignIn(launcher: ActivityResultLauncher<Intent>) {
+        signInClient.signOut().addOnCompleteListener {
+            val signInIntent = signInClient.signInIntent
+            launcher.launch(signInIntent)
+        }
     }
 
     fun handleGoogleSignInResult(
@@ -448,6 +450,14 @@ class AuthService(
 
     companion object {
         const val RC_SIGN_IN = 9001
+    }
+
+    fun signOut(onComplete: (() -> Unit)? = null) {
+        auth.signOut()
+        signInClient.signOut().addOnCompleteListener {
+            Log.d("AuthDebug", "GoogleSignInClient signed out")
+            onComplete?.invoke()
+        }
     }
 
     init {

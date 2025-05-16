@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,53 +24,94 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.data.model.NotificationData
+import com.example.fixzy_ketnoikythuatvien.service.model.Notification
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun NotificationItem(notification: NotificationData) {
+fun NotificationItem(notification: Notification) {
     Card(
-        modifier = Modifier.fillMaxWidth().height(120.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = 4.dp,
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Ảnh người gửi
-            Image(
-                painter = painterResource(id = notification.imageRes),
+            AsyncImage(
+                model = "https://th.bing.com/th/id/OIP._Jlk8vSpJbfCNjDbqzv-DAHaF_?cb=iwc2&rs=1&pid=ImgDetMain", // Replace with actual image URL if available
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(70.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                placeholder = painterResource(id = R.drawable.coc) // Define in resources
             )
 
             Spacer(modifier = Modifier.width(8.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = notification.title, style = AppTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(5.dp)) // Đẩy "Time" xuống dưới
+                Text(
+                    text = notification.title,
+                    style = AppTheme.typography.titleSmall
+                )
+                Spacer(modifier = Modifier.height(5.dp))
 
-                Text(text = notification.message, style = AppTheme.typography.bodySmall, color = Color.Gray)
+                Text(
+                    text = notification.content,
+                    style = AppTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = formatCreatedAt(notification.createdAt),
+                    style = AppTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+
             }
 
             Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                modifier = Modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.End
-            ) {
-                if (notification.isNew) {
-                    Text(text = "New", color = AppTheme.colors.mainColor, style = AppTheme.typography.titleSmall)
-                }
 
-                Spacer(modifier = Modifier.weight(1f)) // Đẩy "Time" xuống dưới
-
-                Text(text = notification.time, style = AppTheme.typography.bodySmall, color = Color.Gray)
-            }
+//            Column(
+//                horizontalAlignment = Alignment.End,
+//                verticalArrangement = Arrangement.SpaceBetween,
+//                modifier = Modifier
+//                    .padding(start = 8.dp)
+//                    .height(70.dp) // Chiều cao tương đương ảnh
+//            ) {
+//                if (notification.isRead == 0) {
+//                    Text(
+//                        text = "New",
+//                        color = AppTheme.colors.mainColor,
+//                        style = AppTheme.typography.titleSmall
+//                    )
+//                }
+//                Spacer(modifier = Modifier.weight(1f))
+//                Text(
+//                    text = formatCreatedAt(notification.createdAt),
+//                    style = AppTheme.typography.bodySmall,
+//                    color = Color.Gray
+//                )
+//            }
 
         }
+    }
+}
+
+private fun formatCreatedAt(createdAt: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("HH:mm, MMM dd", Locale.getDefault())
+        val date = inputFormat.parse(createdAt)
+        outputFormat.format(date ?: Date())
+    } catch (e: Exception) {
+        createdAt // Fallback to raw string
     }
 }

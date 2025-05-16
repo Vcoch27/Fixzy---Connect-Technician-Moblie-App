@@ -16,6 +16,8 @@ import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetNotificationsResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetProviderBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetSummaryStatusResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GoogleUserDataRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
@@ -45,7 +47,6 @@ import java.util.concurrent.TimeUnit
 data class TestItem(val id: Int, val count: Int)
 
 //BuildConfig.BASE_URL
-val URL = "192.168.1.10:3000"
 object ApiClient {
     val apiService: ApiService by lazy {
         val okHttpClient = OkHttpClient.Builder()
@@ -165,4 +166,14 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body userData: GoogleUserDataRequest
     ): Call<ResponseBody>
+
+    @GET("notifications/{userId}/all")
+    fun getNotifications(
+        @Path("userId") userId: Int
+    ): Call<GetNotificationsResponse>
+
+    @GET("bookings/provider/{providerId}")
+    fun getProviderBookings(
+        @Path("providerId") providerId: Int
+    ): Call<GetProviderBookingsResponse>
 }

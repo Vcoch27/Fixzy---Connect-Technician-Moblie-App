@@ -396,13 +396,13 @@ fun TechnicianCard(technician: TopTechnician,navController: NavController) {
                     color = AppTheme.colors.onBackgroundVariant
                 )
 
-                // Giá
                 Text(
-                    text = technician.price,
+                    text = "${technician.price.toDouble().toInt().toString()} VND",
                     style = AppTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = AppTheme.colors.mainColor
                 )
+
 
                 // Đánh giá và số đơn
                 Row(

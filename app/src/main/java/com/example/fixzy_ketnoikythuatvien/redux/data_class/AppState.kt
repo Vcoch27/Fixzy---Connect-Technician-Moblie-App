@@ -8,6 +8,8 @@ import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.Notification
+import com.example.fixzy_ketnoikythuatvien.service.model.ProviderBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Registration
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
@@ -76,4 +78,10 @@ data class AppState(
     var hasShownBookingNotification: Boolean = false,
 
     val newScheduleId: Int? = null,
+    val tempPrice:String? = null,
+
+    //notification
+    val notifications: List<Notification> = emptyList(),
+    val providerBookings: List<ProviderBooking> = emptyList(),
+
     )

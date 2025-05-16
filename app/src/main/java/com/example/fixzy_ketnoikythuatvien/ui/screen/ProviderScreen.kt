@@ -1,5 +1,6 @@
 package com.example.fixzy_ketnoikythuatvien.ui.screen
 
+import android.annotation.SuppressLint
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -28,35 +29,48 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.fixzy_ketnoikythuatvien.R
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
+import com.example.fixzy_ketnoikythuatvien.service.BookingService
 import com.example.fixzy_ketnoikythuatvien.service.ProviderService
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
+import com.example.fixzy_ketnoikythuatvien.service.model.ProviderBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import com.example.fixzy_ketnoikythuatvien.ui.screen.controller.TopTechniciansController
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import com.google.common.base.Objects
 import java.net.URLEncoder
+import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Date
+import java.util.Locale
+import java.text.NumberFormat
 
-
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, providerId: Int) {
     var selectedService by remember { mutableStateOf<ServiceDetail?>(null) }
     val state by Store.stateFlow.collectAsState()
     val providerService = remember { ProviderService() }
+    val bookingService = remember { BookingService() }
     val store = Store.store
-    val  isOwner = state.user?.id == providerId
+    val isOwner = state.user?.id == providerId
+    bookingService.getProviderBookings()
     Log.d("ProviderScreen", "isOwner: $isOwner")
     LaunchedEffect(providerId) {
         if (state.provider == null || state.provider?.name != "Test User") {
             providerService.fetchProviderDetails(providerId)
         }
+
     }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         bottomBar = {
-            Button(
-                onClick = {
-                    if (!isOwner) {
+            if (isOwner) {
+                Button(
+                    onClick = {
+                        if (!isOwner) {
 //                        selectedService?.let { service ->
 //                            Log.d("ProviderScreen", "Selected service: $service")
 //                            store.dispatch(
@@ -74,31 +88,33 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
 //                            navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
 //                            Log.d("ProviderScreen", "Navigated to availability_screen with serviceId: ${service.service_id}")
 //                        }
-                    } else {
-                        navController.navigate("add_service_screen")
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.colors.mainColor
-                ),
-                enabled = isOwner || (selectedService != null)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Book,
-                    contentDescription = "Book Icon",
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.White
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isOwner) "Add service" else "",
-                    color = Color.White,
-                    fontSize = 16.sp
-                )
+                        } else {
+                            navController.navigate("add_service_screen")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AppTheme.colors.mainColor
+                    ),
+                    enabled = isOwner || (selectedService != null)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Book,
+                        contentDescription = "Book Icon",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (isOwner) "Add service" else "",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
             }
+
         }
     ) { paddingValues ->
         Column(
@@ -123,7 +139,8 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                         .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
                 ) {
                     AsyncImage(
-                        model = providerData.avatar_url ?: "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS5oOiRbP2oJSvvZSEkMfRYF5sprtL8ZlXw8J36BzvgfobTOoknbsgUSG1TBtE-jLtBPOP8b6TtvHq2GOOSxU5YLw",
+                        model = providerData.avatar_url
+                            ?: "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS5oOiRbP2oJSvvZSEkMfRYF5sprtL8ZlXw8J36BzvgfobTOoknbsgUSG1TBtE-jLtBPOP8b6TtvHq2GOOSxU5YLw",
                         contentDescription = "Provider Avatar",
                         modifier = Modifier
                             .fillMaxWidth()
@@ -325,28 +342,60 @@ fun ProviderScreen(navController: NavController, modifier: Modifier = Modifier, 
                                                 service = service,
                                                 isSelected = false,
                                                 onSelect = {
-                                                    val encodedName = URLEncoder.encode(service.service_name, "UTF-8").replace("+", "%20")
+                                                    Log.d(
+                                                        "ProviderScreen",
+                                                        "price serrvie: ${service.service_price.toDouble()}"
+                                                    )
+                                                    store.dispatch(
+                                                        Action.UpdateTempPrice(price = service.service_price)
+                                                    )
+                                                    val encodedName = URLEncoder.encode(
+                                                        service.service_name,
+                                                        "UTF-8"
+                                                    ).replace("+", "%20")
                                                     navController.navigate("availability_screen/${service.service_id}?service_name=$encodedName")
                                                 },
                                                 modifier = Modifier.padding(bottom = 8.dp),
                                                 isOwner = isOwner,
-                                                navController= navController
+                                                navController = navController
                                             )
                                         }
                                     }
                                 }
+
                                 1 -> {
-                                    Box(
+                                    // Đổi Box thành Column ở đây
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(16.dp),
-                                        contentAlignment = Alignment.Center
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Text(
-                                            text = "Booking List Placeholder",
-                                            style = AppTheme.typography.bodyMedium,
-                                            color = AppTheme.colors.onBackground
+                                        Log.d(
+                                            "ProviderScreen",
+                                            "provider bookings: ${Store.stateFlow.value.providerBookings}}"
                                         )
+                                        if (Store.stateFlow.value.providerBookings.isNotEmpty()) {
+                                            Log.d(
+                                                "ProviderScreen",
+                                                "provider bookings count: ${Store.stateFlow.value.providerBookings.count()}"
+                                            )
+                                            Store.stateFlow.value.providerBookings.forEach { booking ->
+                                                ProviderBookingCard(
+                                                    navController  = navController,
+                                                    booking = booking,
+                                                    onClick = {},
+                                                    onConfirm = {},
+                                                    onCancel = {}
+                                                )
+                                            }
+                                        } else {
+                                            Text(
+                                                text = "Booking List Null",
+                                                style = AppTheme.typography.bodyMedium,
+                                                color = AppTheme.colors.onBackground
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -395,12 +444,16 @@ fun ServiceCardd(
     onSelect: () -> Unit,
     modifier: Modifier = Modifier,
     isOwner: Boolean = false,
-    navController: NavController
+    navController: NavController,
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { if(isOwner) (navController.navigate("service_provider_mode/${service.service_id}/${service.service_name}"))else (navController.navigate("availability_screen/${service.service_id}?service_name=${service.service_name}")) },
+            .clickable {
+                if (isOwner) (navController.navigate("service_provider_mode/${service.service_id}/${service.service_name}")) else (navController.navigate(
+                    "availability_screen/${service.service_id}?service_name=${service.service_name}"
+                ))
+            },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
@@ -435,7 +488,7 @@ fun ServiceCardd(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "${service.service_price} VND",
+                        text = "${formatCurrency(service.service_price.toDouble())} VND",
                         style = AppTheme.typography.bodyMedium,
                         color = AppTheme.colors.mainColor
                     )
@@ -480,4 +533,150 @@ fun ServiceCardd(
 //            }
         }
     }
+}
+
+@SuppressLint("NewApi")
+@Composable
+fun ProviderBookingCard(
+    navController: NavController,
+    booking: ProviderBooking,
+    onClick: () -> Unit,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isToday = try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        val bookingDate = inputFormat.parse(booking.bookingDate)?.toInstant()
+        val today = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate()
+        bookingDate?.atZone(ZoneId.of("Asia/Ho_Chi_Minh"))?.toLocalDate() == today
+    } catch (e: Exception) {
+        false
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { navController.navigate("service_provider_mode/${booking.serviceId}/Service") },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isToday) AppTheme.colors.mainColor.copy(alpha = 0.1f) else AppTheme.colors.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+//                    text = "Mã đặt lịch: ",
+                    text = "Mã đặt lịch: ${booking.referenceCode}",
+                    style = AppTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppTheme.colors.onSurface
+                )
+                Text(
+//                    text = "Khách hàng:",
+                    text = "Khách hàng: ${booking.fullName}",
+                    style = AppTheme.typography.bodyMedium,
+                    color = AppTheme.colors.onBackgroundVariant
+                )
+                Text(
+//                    text = "Ngày:",
+                    text = "Ngày: ${formatDateTime(booking.bookingDate, booking.bookingTime)}",
+                    style = AppTheme.typography.bodySmall,
+                    color = if (isToday) AppTheme.colors.mainColor else AppTheme.colors.onBackgroundVariant
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+//                        text = "Trạng thái:",
+                        text = "Trạng thái: ${booking.status}",
+                        style = AppTheme.typography.bodySmall,
+                        color = when (booking.status.lowercase()) {
+                            "pending" -> Color.Red
+                            "confirmed" -> Color.Green
+                            else -> AppTheme.colors.onBackgroundVariant
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Giá: ${formatCurrency(booking.totalPrice.toDouble())} VND",
+                        style = AppTheme.typography.bodySmall,
+                        color = AppTheme.colors.mainColor
+                    )
+                }
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                Row {
+                    Button(
+                        onClick = onConfirm,
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .size(80.dp, 30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Green.copy(alpha = 0.8f),
+                            contentColor = Color.White
+                        ),
+                        enabled = booking.status.equals("Pending", ignoreCase = true)
+                    ) {
+                        Text("Xác nhận", fontSize = 12.sp)
+                    }
+                    Button(
+                        onClick = onCancel,
+                        modifier = Modifier.size(80.dp, 30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red.copy(alpha = 0.8f),
+                            contentColor = Color.White
+                        ),
+                        enabled = booking.status.equals(
+                            "Pending",
+                            ignoreCase = true
+                        ) || booking.status.equals("Confirmed", ignoreCase = true)
+                    ) {
+                        Text("Hủy", fontSize = 12.sp)
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "View Details",
+                    tint = AppTheme.colors.onBackgroundVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun formatDateTime(date: String, time: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+        val parsedDate = inputFormat.parse(date) ?: Date()
+        val formattedDate = outputFormat.format(parsedDate)
+        if (formattedDate.startsWith("16 May 2025")) {
+            "Hôm nay, $time"
+        } else {
+            "$formattedDate ($time)"
+        }
+    } catch (e: Exception) {
+        "$date $time"
+    }
+}
+
+private fun formatCurrency(amount: Double): String {
+    val formatter = DecimalFormat("#,###")
+    return formatter.format(amount)
 }

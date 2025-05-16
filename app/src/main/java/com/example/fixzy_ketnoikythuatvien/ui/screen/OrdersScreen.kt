@@ -26,6 +26,7 @@ import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.ui.components.oderComponents.OrderItemCard
 import com.example.fixzy_ketnoikythuatvien.ui.components.oderComponents.OrdersTabRow
 import com.example.fixzy_ketnoikythuatvien.ui.components.publicComponents.TopBar
+import com.example.fixzy_ketnoikythuatvien.utils.NotificationHelper
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -38,7 +39,6 @@ fun OrdersScreen(
     val state by Store.stateFlow.collectAsState()
     val bookings = remember { mutableStateListOf<DetailBooking>() }
 
-    // Sync bookings with store state when it changes
     LaunchedEffect(state.bookings) {
         bookings.clear()
         bookings.addAll(state.bookings)
