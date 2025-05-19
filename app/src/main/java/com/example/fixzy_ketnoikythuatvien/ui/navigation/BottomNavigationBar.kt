@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
+import com.example.fixzy_ketnoikythuatvien.service.AuthService
 import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -40,7 +41,7 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavItem("home_page", "Home", Icons.Outlined.Home),
         BottomNavItem("orders_page", "Order", Icons.Default.ShoppingCart),
         BottomNavItem("notifications_page", "Notification", Icons.Outlined.Notifications, hasBadge = true),
-        BottomNavItem("provider_screen/${userId}", "Provider", Icons.Default.Build),
+        BottomNavItem("provider_mode_page", "Provider", Icons.Default.Build),
         BottomNavItem("profile_page", "Profile", Icons.Outlined.Person)
     )
 
@@ -76,6 +77,14 @@ fun BottomNavigation(
             BottomNavigationItem(
                 selected = isSelected,
                 onClick = {
+                    if(item.label == "Provider"){
+                        AuthService(
+                            context = navController.context,
+                            activity = null,
+                            onSuccess = null,
+                            onError = null
+                        ).getUserData()
+                    }
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
                         launchSingleTop = true

@@ -6,11 +6,12 @@ import com.example.fixzy_ketnoikythuatvien.service.TestItem
 import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
-import com.example.fixzy_ketnoikythuatvien.service.model.GetSummaryStatusResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.ModeService
 import com.example.fixzy_ketnoikythuatvien.service.model.Notification
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Registration
+import com.example.fixzy_ketnoikythuatvien.service.model.Review
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import com.example.fixzy_ketnoikythuatvien.service.model.SummaryBooking
@@ -129,9 +130,12 @@ sealed class Action{
     //notification
     data class GetNotificationsSuccess(val notifications: List<Notification>) : Action()
     data class GetNotificationsFailure(val error: String) : Action()
-    object GetNotificationsLoading : Action()
 
     data class GetProviderBookingSuccess(val bookings: List<ProviderBooking>) : Action()
     data class GetProviderBookingFailure(val error: String) : Action()
-    object GetProviderBookingLoading : Action()
+
+    data class getServiceInformationSuccess(val service: ModeService, val reviews: List<Review>) : Action()
+    data class getServiceInformationFailure(val error: String) : Action()
+
+
 }

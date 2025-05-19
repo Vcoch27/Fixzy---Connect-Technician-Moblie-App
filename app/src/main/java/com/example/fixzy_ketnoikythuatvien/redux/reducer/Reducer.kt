@@ -457,6 +457,21 @@ class Reducer {
                         error = action.error
                     )
                 }
+                is Action.getServiceInformationSuccess -> {
+                    state.copy(
+                        selectedServiceInformation = action.service,
+                        reviews = action.reviews,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                is Action.getServiceInformationFailure -> {
+                    state.copy(
+                        reviews = emptyList(),
+                        isLoading = false,
+                        error = action.error
+                    )
+                }
 
 
                 else -> {

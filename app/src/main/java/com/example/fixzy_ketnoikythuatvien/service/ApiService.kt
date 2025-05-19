@@ -18,6 +18,7 @@ import com.example.fixzy_ketnoikythuatvien.service.model.GetBookingsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetNotificationsResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetProviderBookingsResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetServiceInformationResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GetSummaryStatusResponse
 import com.example.fixzy_ketnoikythuatvien.service.model.GoogleUserDataRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderResponse
@@ -111,9 +112,10 @@ interface ApiService {
         @Path("bookingId") bookingId: Int,
         @Body body: StatusUpdateRequest,
         @Query("rating") rating: Int? = null,
-        @Query("feedback") feedback: String? = null
+        @Query("feedback") feedback: String? = null,
+        @Query("feedback_url") feedback_url: String? = null
     ): Response<StatusUpdateResponse>
-    data class StatusUpdateRequest(val status: String,val user_id: Int,val role: String, val rating: Int? = null,val feedback: String? = null)
+    data class StatusUpdateRequest(val status: String,val user_id: Int,val role: String, val rating: Int? = null,val feedback: String? = null,val feedback_url: String? = null)
     data class StatusUpdateResponse(val success: Boolean, val message: String)
 
     @PUT("user/update")
@@ -176,4 +178,9 @@ interface ApiService {
     fun getProviderBookings(
         @Path("providerId") providerId: Int
     ): Call<GetProviderBookingsResponse>
+
+    @GET("service/information/{serviceId}")
+    fun getServiceInformation(
+        @Path("serviceId") serviceId: Int
+    ):Call<GetServiceInformationResponse>
 }

@@ -8,10 +8,12 @@ import com.example.fixzy_ketnoikythuatvien.service.model.Availability
 import com.example.fixzy_ketnoikythuatvien.service.model.Booking
 import com.example.fixzy_ketnoikythuatvien.service.model.DetailBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.ModeService
 import com.example.fixzy_ketnoikythuatvien.service.model.Notification
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderBooking
 import com.example.fixzy_ketnoikythuatvien.service.model.ProviderData
 import com.example.fixzy_ketnoikythuatvien.service.model.Registration
+import com.example.fixzy_ketnoikythuatvien.service.model.Review
 import com.example.fixzy_ketnoikythuatvien.service.model.Service
 import com.example.fixzy_ketnoikythuatvien.service.model.ServiceDetail
 import com.example.fixzy_ketnoikythuatvien.service.model.SummaryBooking
@@ -84,4 +86,6 @@ data class AppState(
     val notifications: List<Notification> = emptyList(),
     val providerBookings: List<ProviderBooking> = emptyList(),
 
+    val selectedServiceInformation: ModeService? = null,
+    val reviews: List<Review> = emptyList(),
     )
