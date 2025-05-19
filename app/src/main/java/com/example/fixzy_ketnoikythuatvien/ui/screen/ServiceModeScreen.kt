@@ -28,9 +28,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -160,25 +169,25 @@ fun ServiceModeScreen(
             .padding(top = 35.dp, start = 20.dp, end = 20.dp),
         bottomBar = {
             if (selectedTab == 1) {
-                Button(
-                    onClick = {
-                        navController.navigate("add_service_schedule_screen/$serviceId")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colors.mainColor),
-                    enabled = (state.modeService?.schedules?.size ?: 0) < 5
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Schedule",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Add Schedule", color = Color.White, fontSize = 16.sp)
-                }
+                // Button(
+                //     onClick = {
+                //         navController.navigate("add_service_schedule_screen/$serviceId")
+                //     },
+                //     modifier = Modifier
+                //         .fillMaxWidth()
+                //         .padding(16.dp),
+                //     colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colors.mainColor),
+                //     enabled = (state.modeService?.schedules?.size ?: 0) < 5
+                // ) {
+                //     Icon(
+                //         imageVector = Icons.Default.Add,
+                //         contentDescription = "Add Schedule",
+                //         tint = Color.White,
+                //         modifier = Modifier.size(20.dp)
+                //     )
+                //     Spacer(modifier = Modifier.width(8.dp))
+                //     Text("Add Schedule", color = Color.White, fontSize = 16.sp)
+                // }
             }
         }
     ) { paddingValues ->
@@ -210,7 +219,7 @@ fun ServiceModeScreen(
                         Tab(
                             selected = selectedTab == index,
                             onClick = { selectedTab = index },
-                            text = { Text(title) }
+                            text = { Text(title, color = AppTheme.colors.mainColor) }
                         )
                     }
                 }
@@ -223,73 +232,150 @@ fun ServiceModeScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(bottom = 16.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                shape = RoundedCornerShape(20.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8FF))
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    modifier = Modifier.padding(20.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Text(
-                                        text = "Service Name: ${service.name}",
-                                        fontWeight = FontWeight.Bold,
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "Category: ${service.categoryName}",
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "Price: ${service.price} VND",
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "Description: ${service.description ?: "N/A"}",
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "Created At: ${service.createdAt}",
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "Duration: ${service.duration} minutes",
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "Rating: ${String.format("%.1f", service.rating)}",
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "Orders Completed: ${service.ordersCompleted}",
-                                        style = AppTheme.typography.bodyMedium
-                                    )
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Button(
-                                            onClick = {
-                                                scope.launch {
-                                                    // serviceService.updateServiceStatus(serviceId, "INACTIVE")
-                                                }
-                                            },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                                            modifier = Modifier.height(36.dp)
-                                        ) {
+                                    // Tiêu đề dịch vụ
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            tint = AppTheme.colors.mainColor,
+                                            modifier = Modifier.size(28.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = service.name,
+                                            style = AppTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AppTheme.colors.mainColor
+                                        )
+                                    }
+                                    // Giá và rating
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.AttachMoney,
+                                                contentDescription = null,
+                                                tint = Color(0xFF43A047),
+                                                modifier = Modifier.size(20.dp)
+                                            )
                                             Text(
-                                                "Deactivate",
-                                                fontSize = 14.sp,
-                                                color = Color.White
+                                                text = "${service.price} VND",
+                                                style = AppTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF43A047)
                                             )
                                         }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription = null,
+                                                tint = Color(0xFFFFC107),
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Text(
+                                                text = "${String.format("%.1f", service.rating)}",
+                                                style = AppTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFFFC107)
+                                            )
+                                        }
+                                    }
+                                    // Category & Duration
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.Category,
+                                                contentDescription = null,
+                                                tint = AppTheme.colors.mainColor,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = service.categoryName,
+                                                style = AppTheme.typography.bodyMedium
+                                            )
+                                        }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.Schedule,
+                                                contentDescription = null,
+                                                tint = AppTheme.colors.mainColor,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "${service.duration} Minutes",
+                                                style = AppTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
+                                    // Description
+                                    Text(
+                                        text = service.description ?: "No description",
+                                        style = AppTheme.typography.bodyMedium,
+                                        color = AppTheme.colors.onBackgroundVariant
+                                    )
+                                    // Created at & Orders completed
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.CalendarToday,
+                                                contentDescription = null,
+                                                tint = AppTheme.colors.mainColor,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Created: ${service.createdAt.substring(0, 10)}",
+                                                style = AppTheme.typography.bodySmall
+                                            )
+                                        }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.CheckCircle,
+                                                contentDescription = null,
+                                                tint = Color(0xFF43A047),
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Completed: ${service.ordersCompleted}",
+                                                style = AppTheme.typography.bodySmall
+                                            )
+                                        }
+                                    }
+                                    // Nút thao tác
+                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Button(
-                                            onClick = {
-                                                scope.launch {
-                                                    // serviceService.deleteService(serviceId)
-                                                    navController.popBackStack()
-                                                }
-                                            },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                                            modifier = Modifier.height(36.dp)
+                                            onClick = { /* ... */ },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                                            modifier = Modifier.weight(1f)
                                         ) {
-                                            Text("Delete", fontSize = 14.sp, color = Color.White)
+                                            Text("Deactivate", color = Color.White)
+                                        }
+                                        Button(
+                                            onClick = { /* ... */ },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text("Delete", color = Color.White)
                                         }
                                     }
                                 }
@@ -629,68 +715,162 @@ fun BookingCard(
     val bookingDate = try {
         LocalDate.parse(booking.bookingDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     } catch (e: DateTimeParseException) {
-        Log.e("BookingScreen", "Failed to parse booking date: ${booking.date}")
         LocalDate.MIN
     }
-    Log.d("BookingScreen", "Parsed booking date: $bookingDate ;today: $today")
     val isToday = bookingDate == today
 
+    val statusColor = when (booking.status.lowercase()) {
+        "pending" -> Color(0xFFFF9800)
+        "confirmed" -> Color(0xFF4CAF50)
+        "waitingforcustomerconfirmation" -> Color(0xFF2196F3)
+        "completed" -> Color(0xFF9C27B0)
+        else -> Color.Gray
+    }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8FF))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Mã booking + trạng thái
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Booking: ${booking.referenceCode}",
+                    text = booking.referenceCode,
                     style = AppTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.mainColor
+                )
+
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(statusColor, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Icon(
+                    imageVector = when (booking.status.lowercase()) {
+                        "pending" -> Icons.Default.Schedule
+                        "confirmed" -> Icons.Default.CheckCircle
+                        "waitingforcustomerconfirmation" -> Icons.Default.Info
+                        "completed" -> Icons.Default.Star
+                        else -> Icons.Default.Info
+                    },
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = when (booking.status.lowercase()) {
+                        "waitingforcustomerconfirmation" -> "Waiting Confirmation"
+                        else -> booking.status.replaceFirstChar { it.uppercase() }
+                    },
+                    color = Color.White,
+                    style = AppTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
                 )
             }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
+            // Thông tin khách hàng
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Customer: ${booking.fullName}",
+                    text = booking.fullName,
                     style = AppTheme.typography.bodyMedium
                 )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Phone,
+                    contentDescription = null,
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Phone: ${booking.phone ?: "N/A"}",
+                    text = booking.phone ?: "N/A",
                     style = AppTheme.typography.bodyMedium
                 )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Address: ${booking.address ?: "N/A"}",
+                    text = booking.address ?: "N/A",
                     style = AppTheme.typography.bodyMedium
                 )
+            }
+            // Ngày giờ
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.CalendarToday,
+                    contentDescription = null,
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Date: ${DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.parse(booking.bookingDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME))}",
+                    text = "Date: ${
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                            .format(LocalDateTime.parse(booking.bookingDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                    }",
                     style = AppTheme.typography.bodyMedium
                 )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = null,
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "Time: ${booking.bookingTime}",
                     style = AppTheme.typography.bodyMedium
                 )
-                Text(
-                    text = "Created At: ${DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.parse(booking.createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME))}",
-                    style = AppTheme.typography.bodyMedium
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
                 )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Status: ${booking.status}",
+                    text = "Created at: ${
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                            .format(LocalDateTime.parse(booking.createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                    }",
                     style = AppTheme.typography.bodyMedium
                 )
             }
-
+            // Nút thao tác
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -704,9 +884,12 @@ fun BookingCard(
                                 onCompletion("Booking ${booking.referenceCode} confirmed successfully!")
                             }
                         },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text("Confirm")
+                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Confirm", color = Color.White)
                     }
                 } else if (booking.status.equals("Confirmed", ignoreCase = true) && isToday) {
                     Button(
@@ -716,15 +899,13 @@ fun BookingCard(
                                 onCompletion("Booking ${booking.referenceCode} marked as completed!")
                             }
                         },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text("Complete")
+                        Icon(Icons.Default.Done, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Complete", color = Color.White)
                     }
-                }else if(booking.status.equals("WaitingForCustomerConfirmation", ignoreCase = true) && isToday){
-//                    Text(
-//                        text = "Waiting for customer confirmation",
-//                        style = AppTheme.typography.bodyMedium
-//                    )
                 }
             }
         }
@@ -736,43 +917,63 @@ fun ScheduleCard(
     schedule: ServiceSchedule,
     onDelete: () -> Unit,
 ) {
+    // Chỉ lấy giờ và phút
+    val startTime = schedule.start_time.take(5)
+    val endTime = schedule.end_time.take(5)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = schedule.day_of_week,
-                    style = AppTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Chip ngày trong tuần
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFF1976D2), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = schedule.day_of_week,
+                        color = Color.White,
+                        style = AppTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                // Icon + giờ
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = null,
+                    tint = Color(0xFF1976D2),
+                    modifier = Modifier.size(18.dp)
                 )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "${schedule.start_time} - ${schedule.end_time}",
+                    text = "$startTime - $endTime",
                     style = AppTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Created: ${schedule.created_at}",
-                    style = AppTheme.typography.bodySmall,
-                    color = AppTheme.colors.onBackgroundVariant
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1976D2)
                 )
             }
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Delete",
-                modifier = Modifier.clickable { onDelete() },
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onDelete() }
+                    .background(Color(0xFFFFEBEE), CircleShape)
+                    .padding(4.dp),
                 tint = Color.Red
             )
         }
@@ -794,43 +995,32 @@ fun CalendarView2(
         currentDate = currentDate.plusDays(1)
     }
 
-    Log.d(
-        "CalendarView2",
-        "Total bookings: ${bookings.size}, References: ${bookings.joinToString { it.referenceCode }}"
-    )
-
     // Tạo map cho bookings, nhóm theo bookingDate
     val bookingMap = bookings.groupBy { booking ->
         try {
-            val parsedDate =
-                LocalDate.parse(booking.bookingDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            Log.d(
-                "CalendarView2",
-                "Parsed bookingDate for booking ${booking.referenceCode}: $parsedDate"
-            )
-            parsedDate
+            LocalDate.parse(booking.bookingDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         } catch (e: DateTimeParseException) {
-            Log.e(
-                "CalendarView2",
-                "Failed to parse bookingDate for booking ${booking.referenceCode}: ${booking.bookingDate}, error: ${e.message}"
-            )
             LocalDate.MIN
         }
     }
 
-    Log.d("CalendarView2", "Booking map created with ${bookingMap.size} unique dates")
+    // Tìm ngày đầu tuần (thứ 2) của tuần chứa ngày đầu tiên
+    val firstDayOfWeek = days.first().with(java.time.DayOfWeek.MONDAY)
+    // Tìm ngày cuối tuần (chủ nhật) của tuần chứa ngày cuối cùng
+    val lastDayOfWeek = days.last().with(java.time.DayOfWeek.SUNDAY)
+    // Tạo danh sách ngày đầy đủ để đủ tuần
+    val fullDays = mutableListOf<LocalDate>()
+    var d = firstDayOfWeek
+    while (!d.isAfter(lastDayOfWeek)) {
+        fullDays.add(d)
+        d = d.plusDays(1)
+    }
 
-    val months = days.groupBy { it.month }.keys.sortedBy { it.value }
+    // Render tiêu đề tháng khi tuần đầu tiên của tháng xuất hiện
+    var lastMonth: java.time.Month? = null
 
-    months.forEach { month ->
-        Text(
-            text = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
-                .format(days.first { it.month == month }),
-            style = AppTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
+    Column {
+        // Tiêu đề các ngày trong tuần
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -848,80 +1038,76 @@ fun CalendarView2(
             }
         }
 
-        LazyColumn {
-            items((days.size + 6) / 7) { weekIndex ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    for (dayIndex in 0 until 7) {
-                        val absoluteIndex = weekIndex * 7 + dayIndex
-                        if (absoluteIndex in days.indices) {
-                            val date = days[absoluteIndex]
+        // Render từng tuần
+        for (weekIndex in 0 until (fullDays.size / 7)) {
+            val week = fullDays.subList(weekIndex * 7, weekIndex * 7 + 7)
+            // Nếu tuần này có ngày đầu tháng mới, hiển thị tiêu đề tháng
+            val month = week.first().month
+            if (month != lastMonth) {
+                Text(
+                    text = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+                        .format(week.first()),
+                    style = AppTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                lastMonth = month
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                week.forEach { date ->
+                    val inRange = date in days
+                    val bookingsForDate = bookingMap[date] ?: emptyList()
+                    val hasConfirmedBooking = bookingsForDate.any {
+                        it.status.equals("Confirmed", ignoreCase = true)
+                    }
+                    val hasPendingBooking = bookingsForDate.any {
+                        it.status.equals("Pending", ignoreCase = true)
+                    }
+                    val hasWaitingForCustomerConfirmationBooking = bookingsForDate.any {
+                        it.status.equals("WaitingForCustomerConfirmation", ignoreCase = true)
+                    }
+                    val backgroundColor = if (hasConfirmedBooking) {
+                        Color.Green.copy(alpha = 0.5f)
+                    } else {
+                        Color.Transparent
+                    }
+                    val color = if (hasWaitingForCustomerConfirmationBooking) Color(
+                        0xFF437500
+                    ) else Color(0xFF000000)
+                    val borderModifier = if (hasPendingBooking) {
+                        Modifier.border(
+                            width = 2.dp,
+                            color = Color.Blue,
+                            shape = CircleShape
+                        )
+                    } else {
+                        Modifier
+                    }
 
-                            // Lấy danh sách bookings cho ngày hiện tại
-                            val bookingsForDate = bookingMap[date] ?: emptyList()
-                            val hasConfirmedBooking = bookingsForDate.any {
-                                it.status.equals("Confirmed", ignoreCase = true)
-                            }
-                            val hasPendingBooking = bookingsForDate.any {
-                                it.status.equals("Pending", ignoreCase = true)
-                            }
-                            val hasWaitingForCustomerConfirmationBooking = bookingsForDate.any {
-                                it.status.equals("WaitingForCustomerConfirmation", ignoreCase = true)
-                            }
-                            Log.d(
-                                "CalendarView2",
-                                "Date: $date, Confirmed: $hasConfirmedBooking, Pending: $hasPendingBooking"
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .padding(4.dp)
+                            .then(borderModifier)
+                            .background(
+                                if (inRange) backgroundColor else Color.Transparent,
+                                CircleShape
                             )
-
-                            // Xác định màu nền
-                            val backgroundColor = if (hasConfirmedBooking) {
-                                Color.Green.copy(alpha = 0.5f)
-                            } else {
-                                Color.Transparent
-                            }
-                            val color  = if (hasWaitingForCustomerConfirmationBooking) Color(
-                                0xFF437500
-                            ) else Color(0xFF000000)
-                            // Xác định viền cho Pending
-                            val borderModifier = if (hasPendingBooking) {
-                                Modifier.border(
-                                    width = 2.dp,
-                                    color = Color.Blue,
-                                    shape = CircleShape
-                                )
-                            } else {
-                                Modifier
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .aspectRatio(1f)
-                                    .padding(4.dp)
-                                    .then(borderModifier)
-                                    .background(backgroundColor, CircleShape)
-                                    .clickable {
-                                        Log.d("CalendarView2", "Clicked on date: $date")
-                                        onDateSelected(date)
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = date.dayOfMonth.toString(),
-                                    style = AppTheme.typography.bodyMedium,
-                                    color = color,
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .aspectRatio(1f)
-                            )
-                        }
+                            .clickable(enabled = inRange) {
+                                if (inRange) onDateSelected(date)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = date.dayOfMonth.toString(),
+                            style = AppTheme.typography.bodyMedium,
+                            color = if (inRange) color else Color.LightGray,
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             }

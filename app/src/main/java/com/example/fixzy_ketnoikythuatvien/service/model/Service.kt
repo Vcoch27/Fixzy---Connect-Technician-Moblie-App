@@ -68,3 +68,39 @@ data class ModeBooking(
     @SerializedName("end_time") val endTime: String
 )
 
+data class GetServiceInformationResponse(
+    val success: Boolean,
+    val data: ModeService,
+    val reviews: List<Review>
+)
+
+/*
+* {
+      {
+      "review_id": 5,
+      "booking_id": 47,
+      "reference_code": "BOOK-2BC737DC",
+      "full_name": "Bích Hồng Trần thị",
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocI4SoUExtyvZBuDfj3FNp0SGItanYRLrFmniGe7XblcuM3CQw=s96-c",
+      "rating": "5.0",
+      "feedback": "oke",
+      "feedback_url": "https://res.cloudinary.com/dlkrskgwq/image/upload/v1747640953/fixzy/feedback/npff7grxgtdkmeojlz55.png",
+      "booking_date": "2025-05-23T00:00:00.000Z",
+      "booking_time": "10:23:00",
+      "created_at": "2025-05-19T14:49:15.000Z"
+    },
+    * */
+data class Review(
+    @SerializedName("review_id") val reviewId: Int,
+    @SerializedName("booking_id") val bookingId: Int,
+    @SerializedName("reference_code") val referenceCode: String,
+    @SerializedName("full_name") val fullName: String,
+    @SerializedName("avatar_url") val avatarUrl: String?,
+    @SerializedName("rating") val rating: Double,
+    @SerializedName("feedback") val feedback: String?,
+    @SerializedName("feedback_url") val feedbackUrl: String?,
+    @SerializedName("booking_date") val bookingDate: String,
+    @SerializedName("booking_time") val bookingTime: String,
+    @SerializedName("created_at") val createdAt: String
+)
+

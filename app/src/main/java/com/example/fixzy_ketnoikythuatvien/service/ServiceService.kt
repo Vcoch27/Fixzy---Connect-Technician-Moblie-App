@@ -5,16 +5,16 @@ import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.model.AddScheduleRequest
 import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceRequest
-import com.example.fixzy_ketnoikythuatvien.service.model.CreateServiceResponse
-import com.example.fixzy_ketnoikythuatvien.service.model.GetModeServiceResponse
+import com.example.fixzy_ketnoikythuatvien.service.model.GetServiceInformationResponse
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import javax.security.auth.callback.Callback
+import retrofit2.Callback
+import retrofit2.Call
+import retrofit2.Response
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import retrofit2.Response
 
 
 private const val TAG = "ServiceService"
@@ -57,11 +57,16 @@ class ServiceService {
                     store.dispatch(Action.GetModeServiceFailure("Lỗi kết nối: ${e.message}"))
                 }
             } catch (e: Exception) {
-                Log.e("ServiceService", "Ngoại lệ trong quá trình lấy token hoặc gọi API: ${e.message}", e)
+                Log.e(
+                    "ServiceService",
+                    "Ngoại lệ trong quá trình lấy token hoặc gọi API: ${e.message}",
+                    e
+                )
                 store.dispatch(Action.GetModeServiceFailure("Lỗi: ${e.message}"))
             }
         }
     }
+
     suspend fun createService(body: CreateServiceRequest) {
         withContext(Dispatchers.IO) {
             try {
@@ -101,16 +106,17 @@ class ServiceService {
         }
     }
 
-    suspend fun addSchedule(serviceId: Int,body: AddScheduleRequest){
+    suspend fun addSchedule(serviceId: Int, body: AddScheduleRequest) {
         withContext(Dispatchers.IO) {
-            try{
+            try {
                 Log.d("CreateService", "Dispatching loading action")
                 store.dispatch(Action.AddScheduleLoading())
                 val idToken = getFirebaseToken()
                     ?: throw Exception("Không thể lấy token: Người dùng chưa đăng nhập")
                 Log.d("CreateService", "Calling API with token")
                 try {
-                    val response = apiService.addSchedule("Bearer $idToken",serviceId, body).execute()
+                    val response =
+                        apiService.addSchedule("Bearer $idToken", serviceId, body).execute()
                     if (response.isSuccessful) {
                         response.body()?.let {
                             store.dispatch(Action.AddScheduleSuccess("tao lich thanh cong"))
@@ -124,7 +130,7 @@ class ServiceService {
                 } catch (e: Exception) {
                     store.dispatch(Action.AddScheduleFailure("Lỗi kết nối: ${e.message}"))
                 }
-            }catch (e: Exception) {
+            } catch (e: Exception) {
                 store.dispatch(Action.AddScheduleFailure("Lỗi: ${e.message}"))
             }
         }
@@ -170,5 +176,53 @@ class ServiceService {
             Log.e(TAG, "fetchServices ERROR", e)
             store.dispatch(Action.FetchServicesFailure("Error: ${e.message ?: "Unknown error"}"))
         }
+    }
+
+    //use
+    /*
+    @GET("service/information/{serviceId}")
+    fun getServiceInformation(
+        @Path("serviceId") serviceId: Int
+    ):Call<GetServiceInformationResponse>
+    and
+     is Action.getServiceInformationSuccess -> {
+                    state.copy(
+                        selectedServiceInformation = action.service,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                is Action.getServiceInformationFailure -> {
+                    state.copy(
+                        isLoading = false,
+                        error = action.error
+                    )
+                }
+    * */
+
+     fun getServiceInformation(serviceId: Int) {
+        apiService.getServiceInformation(serviceId).enqueue(object: Callback<GetServiceInformationResponse> {
+            override fun onResponse(
+                call: Call<GetServiceInformationResponse>,
+                response: Response<GetServiceInformationResponse>
+            ){
+                if(response.isSuccessful){
+                    response.body()?.let {
+                        if(it.success){
+                            Log.d("ServiceService", "fetch service tc: $serviceId, detail: ${it.data}")
+                            store.dispatch(Action.getServiceInformationSuccess(it.data, it.reviews))
+                        }else{
+                            store.dispatch(Action.getServiceInformationFailure("Error when fetching service information"))
+                        }
+                    }
+                }else{
+                    val errorBody = response.errorBody()?.string()
+                    store.dispatch(Action.getServiceInformationFailure("API call failed: ${response.code()} - $errorBody"))
+                }
+            }
+            override  fun onFailure(call: Call<GetServiceInformationResponse>, t: Throwable){
+                store.dispatch(Action.getServiceInformationFailure("API call failed: ${t.message}"))
+            }
+        })
     }
 }
