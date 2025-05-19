@@ -6,10 +6,14 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.*
@@ -17,10 +21,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -35,7 +43,9 @@ import com.example.fixzy_ketnoikythuatvien.ui.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import java.util.*
+import java.text.SimpleDateFormat
+import java.util.Locale
 @Composable
 fun ProviderModeScreen(
     navController: NavController
@@ -134,76 +144,163 @@ fun ProviderModeScreen(
 
             registration == null -> {
                 // Registration form
-                Text("Đăng ký Provider Mode", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = yearsOfExperience,
-                    onValueChange = { yearsOfExperience = it },
-                    label = { Text("Số năm kinh nghiệm") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = bio,
-                    onValueChange = { if (it.length <= 500) bio = it },
-                    label = { Text("Giới thiệu bản thân") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    IconButton(onClick = { imagePicker.launch("image/*") }) {
-                        Icon(
-                            imageVector = Icons.Default.AddAPhoto,
-                            contentDescription = "Chọn ảnh chứng chỉ"
-                        )
-                    }
-                    Text(if (imageUri != null) "Đã chọn ảnh" else "Chưa chọn ảnh")
-                }
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 24.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Provider Registration",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = AppTheme.colors.mainColor
+                            )
 
-                formError?.let {
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                            Spacer(modifier = Modifier.height(24.dp))
 
-                Button(
-                    onClick = {
-                        when {
-                            yearsOfExperience.isBlank() || yearsOfExperience.toIntOrNull() == null ->
-                                formError = "Số năm kinh nghiệm phải là một số hợp lệ"
+                            OutlinedTextField(
+                                value = yearsOfExperience,
+                                onValueChange = { if (it.length <= 2) yearsOfExperience = it },
+                                label = { Text("Years of Experience") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = AppTheme.colors.mainColor,
+                                    focusedLabelColor = AppTheme.colors.mainColor
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            )
 
-                            yearsOfExperience.toInt() <= 0 ->
-                                formError = "Số năm kinh nghiệm phải lớn hơn 0"
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                            bio.isBlank() || bio.length < 10 ->
-                                formError = "Giới thiệu phải có ít nhất 10 ký tự"
+                            OutlinedTextField(
+                                value = bio,
+                                onValueChange = { if (it.length <= 500) bio = it },
+                                label = { Text("Professional Bio") },
+                                placeholder = { Text("Tell us about your expertise and experience...") },
+                                modifier = Modifier.fillMaxWidth(),
+                                minLines = 4,
+                                maxLines = 6,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = AppTheme.colors.mainColor,
+                                    focusedLabelColor = AppTheme.colors.mainColor
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            )
 
-                            imageUri == null ->
-                                formError = "Vui lòng chọn ảnh chứng chỉ"
+                            Spacer(modifier = Modifier.height(24.dp))
 
-                            else -> {
-                                formError = null
-                                showConfirmDialog = true
+                            // Certificate Image Selection
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(160.dp)
+                                    .clickable { imagePicker.launch("image/*") },
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.dp, Color.LightGray)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    if (imageUri != null) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(imageUri),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.AddAPhoto,
+                                                contentDescription = null,
+                                                tint = AppTheme.colors.mainColor,
+                                                modifier = Modifier.size(48.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                "Upload Certificate",
+                                                color = AppTheme.colors.mainColor
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Error Message
+                            formError?.let {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = it,
+                                    color = Color.Red,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(32.dp))
+
+                            Button(
+                                onClick = {
+                                    when {
+                                        yearsOfExperience.isBlank() || yearsOfExperience.toIntOrNull() == null ->
+                                            formError = "Số năm kinh nghiệm phải là một số hợp lệ"
+
+                                        yearsOfExperience.toInt() <= 0 ->
+                                            formError = "Số năm kinh nghiệm phải lớn hơn 0"
+
+                                        bio.isBlank() || bio.length < 10 ->
+                                            formError = "Giới thiệu phải có ít nhất 10 ký tự"
+
+                                        imageUri == null ->
+                                            formError = "Vui lòng chọn ảnh chứng chỉ"
+
+                                        else -> {
+                                            formError = null
+                                            showConfirmDialog = true
+                                        }
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = AppTheme.colors.mainColor
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text(
+                                    "Submit Registration",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
                             }
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Đăng ký")
+                    }
                 }
 
                 if (showConfirmDialog) {
                     AlertDialog(
                         onDismissRequest = { showConfirmDialog = false },
-                        title = { Text("Xác nhận đăng ký") },
-                        text = { Text("Bạn có chắc chắn muốn gửi đơn đăng ký?") },
+                        title = { Text("Confirm registration") },
+                        text = { Text("Are you sure you want to submit your application?") },
                         confirmButton = {
                             Button(onClick = {
                                 showConfirmDialog = false
@@ -243,17 +340,14 @@ fun ProviderModeScreen(
             else -> {
                 when (registration.status) {
                     "pending" -> {
-                        Text(
-                            "Đơn đăng ký của bạn đang được xử lý",
-                            style = MaterialTheme.typography.headlineSmall
-                        )
+
                         Spacer(modifier = Modifier.height(16.dp))
                         RegistrationInfo(registration)
                     }
 
                     "rejected" -> {
                         Text(
-                            "Đơn đăng ký của bạn đã bị từ chối",
+                            "Your application has been rejected",
                             style = MaterialTheme.typography.headlineSmall
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -261,29 +355,33 @@ fun ProviderModeScreen(
                             // Cho phép gửi lại
                             hasFetchedRegistration = false
                         }) {
-                            Text("Gửi lại đơn")
+                            Text("Resend application")
                         }
                     }
 
                     "confirmed" -> {
                         Text(
-                            "Đơn đăng ký của bạn đã được duyệt!",
+                            "Your application has been approved!",
                             style = MaterialTheme.typography.headlineSmall
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         RegistrationInfo(registration)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "Hoàn thành để trở thành Provider",
+                            "Complete to become a Provider",
                             style = MaterialTheme.typography.titleMedium
                         )
-                        Text("Phí hàng tháng: ${registration.monthlyFee}")
+                        Text("Monthly Fee: ${registration.monthlyFee}VND")
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
                             onClick = {
                                 providerService.createPayment(registration.id, registration.userId)
                             },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AppTheme.colors.mainColor,
+                            ),
                             modifier = Modifier.fillMaxWidth()
+
                         ) {
                             if (state.isGetPayment) {
                                 CircularProgressIndicator(
@@ -291,7 +389,7 @@ fun ProviderModeScreen(
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                             } else {
-                                Text("Tiếp tục thanh toán")
+                                Text("Continue to checkout")
                             }
                         }
                         state.getPaymentError?.let {
@@ -316,24 +414,138 @@ fun ProviderModeScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun RegistrationInfo(registration: Registration) {
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(16.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Text("THÔNG TIN ĐĂNG KI:")
-        Text("Số năm kinh nghiệm: ${registration.yearsOfExperience}")
-        Text("Giới thiệu: ${registration.bio}")
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = registration.certificateUrl
-            ),
-            contentDescription = "Profile Picture",
-            modifier = Modifier.size(200.dp)
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                "Registration Details",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.mainColor
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        "Experience",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = AppTheme.colors.onBackgroundVariant
+                    )
+                    Text(
+                        "${registration.yearsOfExperience} years",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        "Status",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = AppTheme.colors.onBackgroundVariant
+                    )
+                    registration.status?.let { StatusChip(it) }
+                }
+            }
+
+            // Bio Section
+            Column {
+                Text(
+                    "Professional Bio",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AppTheme.colors.onBackgroundVariant
+                )
+                Text(
+                    registration.bio,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            // Certificate Image
+            Column {
+                Text(
+                    "Certificate",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AppTheme.colors.onBackgroundVariant
+                )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    AsyncImage(
+                        model = registration.certificateUrl,
+                        contentDescription = "Certificate",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+
+            // Registration Date
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    "Submitted: ${formatDate(registration.createdAt)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppTheme.colors.onBackgroundVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusChip(status: String) {
+    Surface(
+        modifier = Modifier
+            .padding(4.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = when(status) {
+            "pending" -> Color(0xFFFFF3E0)
+            "confirmed" -> Color(0xFFE8F5E9)
+            "rejected" -> Color(0xFFFFEBEE)
+            else -> Color.LightGray
+        }
+    ) {
+        Text(
+            text = status.capitalize(Locale.ROOT),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = when(status) {
+                "pending" -> Color(0xFFF57C00)
+                "confirmed" -> Color(0xFF2E7D32)
+                "rejected" -> Color(0xFFD32F2F)
+                else -> Color.DarkGray
+            }
         )
-        Text("Trạng thái: ${registration.status}")
-        Text("Ngày tạo: ${registration.createdAt}")
+    }
+}
+
+// Add this utility function
+private fun formatDate(dateString: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+        val date = inputFormat.parse(dateString)
+        outputFormat.format(date)
+    } catch (e: Exception) {
+        dateString
     }
 }

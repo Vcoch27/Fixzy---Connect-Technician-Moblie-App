@@ -5,6 +5,7 @@ import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -554,110 +556,153 @@ fun ProviderBookingCard(
         false
     }
 
+    val statusColor = when (booking.status.lowercase()) {
+        "pending" -> Color(0xFFFF9800)
+        "confirmed" -> Color(0xFF4CAF50)
+        "waitingforcustomerconfirmation" -> Color(0xFF2196F3)
+        "completed" -> Color(0xFF9C27B0)
+        else -> Color.Gray
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { navController.navigate("service_provider_mode/${booking.serviceId}/Service") },
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onClick() }
+            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(20.dp))
+            .clickable { navController.navigate("service_provider_mode/${booking.serviceId}/${"Service"}") },
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isToday) AppTheme.colors.mainColor.copy(alpha = 0.1f) else AppTheme.colors.surface
+            containerColor = Brush.horizontalGradient(
+                colors = listOf(
+                    statusColor.copy(alpha = 0.08f),
+                    AppTheme.colors.actionSurface
+                )
+            ).let { BrushColor(it) }
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(18.dp)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-//                    text = "Mã đặt lịch: ",
-                    text = "Mã đặt lịch: ${booking.referenceCode}",
-                    style = AppTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.onSurface
+                    text = "Mã: ${booking.referenceCode}",
+                    style = AppTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.mainColor
                 )
-                Text(
-//                    text = "Khách hàng:",
-                    text = "Khách hàng: ${booking.fullName}",
-                    style = AppTheme.typography.bodyMedium,
-                    color = AppTheme.colors.onBackgroundVariant
+
+            }
+            AssistChip(
+                onClick = {},
+                label = {
+                    Text(
+                        text = booking.status.replaceFirstChar { it.uppercase() },
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = statusColor
+                ),
+                leadingIcon = {
+                    Icon(
+                        imageVector = when (booking.status.lowercase()) {
+                            "pending" -> Icons.Default.Schedule
+                            "confirmed" -> Icons.Default.CheckCircle
+                            "waitingforcustomerconfirmation" -> Icons.Default.HourglassBottom
+                            "completed" -> Icons.Default.DoneAll
+                            else -> Icons.Default.Info
+                        },
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Khách hàng",
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
                 )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-//                    text = "Ngày:",
-                    text = "Ngày: ${formatDateTime(booking.bookingDate, booking.bookingTime)}",
+                    text = booking.fullName,
+                    style = AppTheme.typography.bodyMedium,
+                    color = AppTheme.colors.onBackground
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Event,
+                    contentDescription = "Ngày",
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = formatDateTime(booking.bookingDate, booking.bookingTime),
                     style = AppTheme.typography.bodySmall,
                     color = if (isToday) AppTheme.colors.mainColor else AppTheme.colors.onBackgroundVariant
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-//                        text = "Trạng thái:",
-                        text = "Trạng thái: ${booking.status}",
-                        style = AppTheme.typography.bodySmall,
-                        color = when (booking.status.lowercase()) {
-                            "pending" -> Color.Red
-                            "confirmed" -> Color.Green
-                            else -> AppTheme.colors.onBackgroundVariant
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Giá: ${formatCurrency(booking.totalPrice.toDouble())} VND",
-                        style = AppTheme.typography.bodySmall,
-                        color = AppTheme.colors.mainColor
-                    )
-                }
             }
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.End
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.AttachMoney,
+                    contentDescription = "Giá",
+                    tint = AppTheme.colors.mainColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "${formatCurrency(booking.totalPrice.toDouble())} VND",
+                    style = AppTheme.typography.bodySmall,
+                    color = AppTheme.colors.mainColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row {
+                if (booking.status.lowercase() == "pending") {
                     Button(
                         onClick = onConfirm,
-                        modifier = Modifier
-                            .padding(end = 4.dp)
-                            .size(80.dp, 30.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Green.copy(alpha = 0.8f),
-                            contentColor = Color.White
-                        ),
-                        enabled = booking.status.equals("Pending", ignoreCase = true)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                        modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text("Xác nhận", fontSize = 12.sp)
+                        Icon(Icons.Default.Check, contentDescription = "Xác nhận", tint = Color.White)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Xác nhận", color = Color.White)
                     }
-                    Button(
+                    OutlinedButton(
                         onClick = onCancel,
-                        modifier = Modifier.size(80.dp, 30.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red.copy(alpha = 0.8f),
-                            contentColor = Color.White
-                        ),
-                        enabled = booking.status.equals(
-                            "Pending",
-                            ignoreCase = true
-                        ) || booking.status.equals("Confirmed", ignoreCase = true)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
                     ) {
-                        Text("Hủy", fontSize = 12.sp)
+                        Icon(Icons.Default.Close, contentDescription = "Huỷ", tint = Color.Red)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Huỷ", color = Color.Red)
                     }
                 }
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = "View Details",
-                    tint = AppTheme.colors.onBackgroundVariant,
-                    modifier = Modifier.size(20.dp)
-                )
             }
         }
     }
+}
+
+@Composable
+fun BrushColor(brush: Brush): Color {
+    return Color.Transparent
 }
 
 private fun formatDateTime(date: String, time: String): String {
