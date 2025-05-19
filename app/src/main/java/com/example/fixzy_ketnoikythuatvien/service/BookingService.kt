@@ -1,9 +1,14 @@
 package com.example.fixzy_ketnoikythuatvien.service
 
+import android.content.Context
+import android.net.Uri
 import retrofit2.Call
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.ErrorInfo
+import com.cloudinary.android.callback.UploadCallback
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.data_class.AppState
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
@@ -147,7 +152,6 @@ class BookingService {
             val token = "Bearer ${task.result.token}"
             Log.d(TAG, "Firebase token acquired successfully: ${token.take(10)}...")
 
-            // Gọi API để lấy danh sách bookings
             try {
                 apiService.getBookingsForUser(token)
                     .enqueue(object : Callback<GetBookingsResponse> {
@@ -191,14 +195,16 @@ class BookingService {
         status: String,
         rating: Int? = 0,
         feedback: String? = "no feedback",
+        feedback_url: String? = null
     ): Boolean {
+        Log.d(TAG, "Starting updateBookingStatus for bookingId=$bookingId, status=$status, rating=$rating, feedback=$feedback, feedback_url=$feedback_url")
         store.dispatch(Action.UpdateBookingStatus)
-        Log.d(TAG, "Updating booking status for bookingId=$bookingId, status=$status")
+        Log.d(TAG, "Dispatched UpdateBookingStatus action for bookingId=$bookingId")
 
         try {
             // Kiểm tra giá trị đầu vào
             if (bookingId <= 0) {
-                Log.e(TAG, "Invalid bookingId: $bookingId")
+                Log.e(TAG, "Validation failed: Invalid bookingId=$bookingId")
                 store.dispatch(Action.UpdateBookingStatusFailure("ID đặt lịch không hợp lệ."))
                 return false
             }
@@ -211,13 +217,11 @@ class BookingService {
                 "WaitingForCustomerConfirmation"
             )
             if (status !in validStatuses) {
-                Log.e(TAG, "Invalid status: $status")
+                Log.e(TAG, "Validation failed: Invalid status=$status, valid statuses: ${validStatuses.joinToString(", ")}")
                 store.dispatch(
                     Action.UpdateBookingStatusFailure(
                         "Trạng thái không hợp lệ. Các trạng thái hợp lệ: ${
-                            validStatuses.joinToString(
-                                ", "
-                            )
+                            validStatuses.joinToString(", ")
                         }."
                     )
                 )
@@ -225,9 +229,10 @@ class BookingService {
             }
 
             val state = store.getState()
+            Log.d(TAG, "Retrieved store state for bookingId=$bookingId")
             val user = state.user
             if (user == null) {
-                Log.e(TAG, "User not logged in")
+                Log.e(TAG, "Authentication failed: No user logged in")
                 store.dispatch(Action.UpdateBookingStatusFailure("Vui lòng đăng nhập để cập nhật trạng thái."))
                 return false
             }
@@ -235,24 +240,27 @@ class BookingService {
             val userId = user.id
             val role = user.role
             if (userId == null || role == null) {
-                Log.e(TAG, "Invalid user data: userId=$userId, role=$role")
+                Log.e(TAG, "Validation failed: Invalid user data - userId=$userId, role=$role")
                 store.dispatch(Action.UpdateBookingStatusFailure("Thông tin người dùng không hợp lệ."))
                 return false
             }
 
             Log.d(
                 TAG,
-                "Sending request with userId=$userId, role=$role, bookingId=$bookingId, status=$status"
+                "Preparing API request with userId=$userId, role=$role, bookingId=$bookingId, status=$status"
             )
             val response: Response<ApiService.StatusUpdateResponse> =
-                if (status == "Completed" && role == "user") {
+                if (status == "Completed") {
+                    Log.d(TAG, "Sending update with feedback: rating=$rating, feedback=$feedback, feedback_url=$feedback_url")
                     apiService.updateBookingStatus(
                         bookingId,
                         ApiService.StatusUpdateRequest(status, userId, role),
                         rating,
-                        feedback
+                        feedback,
+                        feedback_url
                     )
                 } else {
+                    Log.d(TAG, "Sending update without feedback for status=$status")
                     apiService.updateBookingStatus(
                         bookingId,
                         ApiService.StatusUpdateRequest(status, userId, role)
@@ -260,7 +268,7 @@ class BookingService {
                 }
             if (response.isSuccessful && response.body()?.success == true) {
                 val message = response.body()?.message ?: "Cập nhật trạng thái thành công."
-                Log.d(TAG, "Booking status updated successfully: $message")
+                Log.d(TAG, "Booking status updated successfully: $message, responseCode=${response.code()}")
                 store.dispatch(Action.UpdateBookingStatusSuccess(message))
                 return true
             } else {
@@ -273,7 +281,6 @@ class BookingService {
                         401 -> errorResponse.message ?: "Không xác thực được người dùng."
                         403 -> errorResponse.message
                             ?: "Bạn không có quyền thực hiện hành động này."
-
                         else -> errorResponse.message ?: "Lỗi server khi cập nhật trạng thái."
                     }
                 } catch (e: Exception) {
@@ -281,7 +288,7 @@ class BookingService {
                 }
                 Log.e(
                     TAG,
-                    "Failed to update booking status: HTTP ${response.code()}, message=$errorMessage"
+                    "Update failed: HTTP ${response.code()}, message=$errorMessage, errorBody=$errorBody"
                 )
                 store.dispatch(Action.UpdateBookingStatusFailure(errorMessage))
                 return false
@@ -300,54 +307,106 @@ class BookingService {
             } catch (ex: Exception) {
                 errorBody ?: "Lỗi server khi cập nhật trạng thái."
             }
-            Log.e(TAG, "HTTP error updating booking status: $errorMessage", e)
+            Log.e(TAG, "HTTP exception caught: code=${e.code()}, message=$errorMessage, errorBody=$errorBody", e)
             store.dispatch(Action.UpdateBookingStatusFailure(errorMessage))
             return false
         } catch (e: IOException) {
-            Log.e(TAG, "Network error updating booking status", e)
+            Log.e(TAG, "Network error occurred while updating booking status", e)
             store.dispatch(Action.UpdateBookingStatusFailure("Lỗi kết nối mạng. Vui lòng kiểm tra lại."))
             return false
         } catch (e: Exception) {
-            Log.e(TAG, "Unexpected error updating booking status", e)
+            Log.e(TAG, "Unexpected error occurred: message=${e.message}", e)
             store.dispatch(Action.UpdateBookingStatusFailure("Đã xảy ra lỗi không xác định: ${e.message}"))
             return false
         }
     }
 
+    suspend fun uploadFeedbackImage(context: Context, imageUri: Uri): String =
+        suspendCancellableCoroutine { continuation ->
+            Log.d(TAG, "Initiating feedback image upload for URI=$imageUri")
+            MediaManager.get()
+                .upload(imageUri)
+                .option("folder", "fixzy/feedback")
+                .callback(object : UploadCallback {
+                    override fun onStart(requestId: String?) {
+                        Log.d(TAG, "Upload started: requestId=$requestId, URI=$imageUri")
+                    }
+
+                    override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {
+                        Log.d(TAG, "Upload progress: requestId=$requestId, $bytes/$totalBytes bytes uploaded")
+                    }
+
+                    override fun onSuccess(requestId: String?, resultData: Map<*, *>) {
+                        Log.d(TAG, "Upload successful: requestId=$requestId, result=$resultData")
+                        val url = resultData["secure_url"] as? String
+                        if (url != null) {
+                            Log.d(TAG, "Image uploaded successfully, secure_url=$url")
+                            continuation.resume(url) { cause, _, _ ->
+                                Log.e(TAG, "Continuation resumption error: ${cause?.message}", cause)
+                            }
+                        } else {
+                            Log.e(TAG, "Upload failed: No secure_url in result data=$resultData")
+                            continuation.resumeWithException(IOException("No secure_url in result"))
+                        }
+                    }
+
+                    override fun onError(requestId: String?, error: ErrorInfo?) {
+                        Log.e(TAG, "Upload error: requestId=$requestId, error=${error?.description}")
+                        continuation.resumeWithException(IOException("Upload error: ${error?.description}"))
+                    }
+
+                    override fun onReschedule(requestId: String?, error: ErrorInfo?) {
+                        Log.w(TAG, "Upload rescheduled: requestId=$requestId, error=${error?.description}")
+                    }
+                })
+                .dispatch()
+            Log.d(TAG, "Upload dispatched for URI=$imageUri")
+        }
+
     suspend fun getSummaryStatus() {
+        Log.d(TAG, "Starting getSummaryStatus")
         withContext(Dispatchers.IO) {
             try {
+                Log.d(TAG, "Attempting to get Firebase token")
                 val idToken = getFirebaseToken()
                     ?: throw Exception("Không thể lấy token: Người dùng chưa đăng nhập")
+                Log.d(TAG, "Firebase token obtained successfully")
 
                 try {
+                    Log.d(TAG, "Sending API request for summary status with token=Bearer $idToken")
                     val response = apiService.getSummaryStatus("Bearer $idToken").execute()
 
                     if (response.isSuccessful) {
                         response.body()?.let { summaryResponse ->
-                            Log.d(TAG, "Summary response received: $summaryResponse")
+                            Log.d(TAG, "Summary status API call successful: response=$summaryResponse")
                             store.dispatch(
                                 Action.GetSummaryStatusSuccess(
                                     todayBookings = summaryResponse.todayBookings ?: emptyList(),
                                     needAction = summaryResponse.needAction ?: emptyList()
                                 )
                             )
+                            Log.d(TAG, "Dispatched GetSummaryStatusSuccess with ${summaryResponse.todayBookings?.size} bookings")
                         } ?: run {
+                            Log.e(TAG, "Summary status API call returned null body")
                             store.dispatch(Action.GetSummaryStatusFailure("Không có dữ liệu"))
                         }
                     } else {
                         val errorBody = response.errorBody()?.string()
+                        Log.e(TAG, "Summary status API call failed: HTTP ${response.code()}, errorBody=$errorBody")
                         store.dispatch(
                             Action.GetSummaryStatusFailure("Lỗi: ${errorBody ?: response.message()}")
                         )
                     }
                 } catch (e: Exception) {
+                    Log.e(TAG, "Exception during summary status API call: ${e.message}", e)
                     store.dispatch(Action.GetSummaryStatusFailure("Lỗi kết nối: ${e.message}"))
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Failed to get Firebase token: ${e.message}", e)
                 store.dispatch(Action.GetSummaryStatusFailure("Lỗi: ${e.message}"))
             }
         }
+        Log.d(TAG, "Completed getSummaryStatus execution")
     }
 
     fun getProviderBookings() {
