@@ -62,7 +62,6 @@ fun SignUpScreen(
     onNavigateToHome: () -> Unit,
 ) {
     val context = LocalContext.current
-
     val authService = remember { AuthService(context =  context,
         activity = null,
         onSuccess = null,
@@ -161,16 +160,13 @@ fun SignUpScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = isChecked, onCheckedChange = { isChecked = it })
-                        Text(text = "I agree to the ")
-                        ClickableText(text = AnnotatedString("Terms of Service"), onClick = { /* TODO */ })
-                        Text(text = " and ")
-                        ClickableText(text = AnnotatedString("Privacy Policy"), onClick = { /* TODO */ })
+                        Text(text = "I agree to the Terms of Service and Privacy Policy")
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
                         onClick = {
-                            Log.d(TAG, "Create Account button clicked") // Log khi nhấn nút
+                            Log.d(TAG, "Create Account button clicked")
                             Log.d(TAG, "Input data - Name: $name, Email: $email, Phone: $phone, Password: $password, ConfirmPassword: $confirmPassword, IsChecked: $isChecked") // Log dữ liệu đầu vào
                             when {
                                 name.isEmpty() -> {

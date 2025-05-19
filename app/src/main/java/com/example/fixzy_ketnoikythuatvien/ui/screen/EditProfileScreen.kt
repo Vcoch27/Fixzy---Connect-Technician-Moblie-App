@@ -4,10 +4,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -75,180 +77,256 @@ fun EditProfileScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 28.dp, start = 10.dp, end = 10.dp),
+            .padding(top = 28.dp),
         topBar = {
             TopBar(
                 navController = navController,
-                title = "Chỉnh sửa hồ sơ",
-
-                )
+                title = "Edit Profile",
+            )
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Color(0xFFF8F8FF))
         ) {
-            // Avatar section
-            Box(
-                contentAlignment = Alignment.BottomEnd
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Log.d("EditProfileScreen", "currentAvatarUrl: $currentAvatarUrl")
-                val painter = when {
-                    isAvatarChanged && tempAvatarUri != null -> rememberAsyncImagePainter(
-                        tempAvatarUri
-                    )
-
-                    currentAvatarUrl.isNotEmpty() -> rememberAsyncImagePainter(currentAvatarUrl)
-                    else -> painterResource(R.drawable.coc)
-                }
-
-                Image(
-                    painter = painter,
-                    contentDescription = "Avatar",
+                // Profile Header
+                Card(
                     modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-
-                IconButton(
-                    onClick = { imagePickerLauncher.launch("image/*") },
-                    modifier = Modifier
-                        .size(40.dp)
+                        .fillMaxWidth()
+                        .padding(bottom = 24.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(35.dp)
-                            .background(AppTheme.colors.mainColor, CircleShape),
-                        contentAlignment = Alignment.Center
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_camera),
-                            contentDescription = "Change avatar",
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Form fields
-
-            OutlinedTextField(
-                value = fullName,
-                onValueChange = {
-                    fullName = it
-                    fullNameError = if (it.isBlank()) "Họ tên không được để trống" else null
-                },
-                label = { Text("Họ và tên") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = fullNameError != null,
-                supportingText = { fullNameError?.let { Text(it, color = Color.Red) } },
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = phone,
-                onValueChange = {
-                    if (it.length <= 15 && (it.isEmpty() || it.all { c -> c.isDigit() })) {
-                        phone = it
-                        phoneError = when {
-                            it.isBlank() -> "Số điện thoại không được để trống"
-                            it.length < 10 -> "Số điện thoại quá ngắn"
-                            !it.startsWith("0") -> "Số điện thoại phải bắt đầu bằng 0"
-                            else -> null
-                        }
-                    }
-                },
-                label = { Text("Số điện thoại") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = phoneError != null,
-                supportingText = { phoneError?.let { Text(it, color = Color.Red) } },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = address,
-                onValueChange = {
-                    address = it
-                    addressError = if (it.isBlank()) "Địa chỉ không được để trống" else null
-                },
-                label = { Text("Địa chỉ") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = addressError != null,
-                supportingText = { addressError?.let { Text(it, color = Color.Red) } },
-                singleLine = false,
-                maxLines = 3
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        fullNameError =
-                            if (fullName.isBlank()) "Họ tên không được để trống" else null
-                        phoneError = when {
-                            phone.isBlank() -> "Số điện thoại không được để trống"
-                            phone.length < 10 -> "Số điện thoại quá ngắn"
-                            !phone.startsWith("0") -> "Số điện thoại phải bắt đầu bằng 0"
-                            else -> null
-                        }
-                        addressError =
-                            if (address.isBlank()) "Địa chỉ không được để trống" else null
-
-                        if (fullNameError == null && phoneError == null && addressError == null) {
-                            isLoading = true
-                            try {
-                                var finalAvatarUrl = currentAvatarUrl
-
-                                // Chỉ upload ảnh nếu có thay đổi
-                                if (isAvatarChanged && tempAvatarUri != null) {
-                                    isUploading = true
-                                    try {
-                                        finalAvatarUrl =
-                                            userService.uploadAvatar(context, tempAvatarUri!!)
-                                    } finally {
-                                        isUploading = false
-                                    }
-                                }
-
-                                userService.updateProfile(
-                                    fullName = fullName.takeIf { it.isNotEmpty() },
-                                    phone = phone.takeIf { it.isNotEmpty() },
-                                    address = address.takeIf { it.isNotEmpty() },
-                                    avatarUrl = finalAvatarUrl.takeIf { it.isNotEmpty() },
-                                    context = context
+                        // Avatar Section with improved design
+                        Box(
+                            contentAlignment = Alignment.BottomEnd,
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Surface(
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .clip(CircleShape),
+                                shape = CircleShape,
+                                border = BorderStroke(3.dp, AppTheme.colors.mainColor.copy(alpha = 0.1f)),
+                                color = Color.White,
+                                shadowElevation = 8.dp
+                            ) {
+                                Image(
+                                    painter = when {
+                                        isAvatarChanged && tempAvatarUri != null -> rememberAsyncImagePainter(tempAvatarUri)
+                                        currentAvatarUrl.isNotEmpty() -> rememberAsyncImagePainter(currentAvatarUrl)
+                                        else -> painterResource(R.drawable.coc)
+                                    },
+                                    contentDescription = "Avatar",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
                                 )
+                            }
 
-                                navController.popBackStack()
-                            } finally {
-                                isLoading = false
+                            IconButton(
+                                onClick = { imagePickerLauncher.launch("image/*") },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .offset(x = (-4).dp, y = (-4).dp)
+                            ) {
+                                Surface(
+                                    modifier = Modifier.size(35.dp),
+                                    shape = CircleShape,
+                                    color = AppTheme.colors.mainColor,
+                                    shadowElevation = 4.dp
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_camera),
+                                        contentDescription = "Change avatar",
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .size(20.dp),
+                                        tint = Color.White
+                                    )
+                                }
                             }
                         }
-
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.colors.mainColor,
-                    contentColor = Color.White
-                )
-            ) {
-                when {
-                    isUploading -> Text("Updating.....")
-                    isLoading -> Text("Updating.....")
-                    else -> Text("Update")
+                }
+
+                // Form Fields with improved styling
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Full Name Field
+                        Column {
+                            Text(
+                                "Full Name",
+                                style = AppTheme.typography.bodyMedium,
+                                color = AppTheme.colors.onBackgroundVariant
+                            )
+                            OutlinedTextField(
+                                value = fullName,
+                                onValueChange = {
+                                    fullName = it
+                                    fullNameError = if (it.isBlank()) "Name is required" else null
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                isError = fullNameError != null,
+                                supportingText = { fullNameError?.let { Text(it, color = Color.Red) } },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = AppTheme.colors.mainColor,
+                                    unfocusedBorderColor = Color.LightGray
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+
+                        // Phone Field
+                        Column {
+                            Text(
+                                "Phone Number",
+                                style = AppTheme.typography.bodyMedium,
+                                color = AppTheme.colors.onBackgroundVariant
+                            )
+                            OutlinedTextField(
+                                value = phone,
+                                onValueChange = {
+                                    if (it.length <= 15 && (it.isEmpty() || it.all { c -> c.isDigit() })) {
+                                        phone = it
+                                        phoneError = when {
+                                            it.isBlank() -> "Phone number is required"
+                                            it.length < 10 -> "Phone number is too short"
+                                            !it.startsWith("0") -> "Phone number must start with 0"
+                                            else -> null
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                isError = phoneError != null,
+                                supportingText = { phoneError?.let { Text(it, color = Color.Red) } },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = AppTheme.colors.mainColor,
+                                    unfocusedBorderColor = Color.LightGray
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+
+                        // Address Field
+                        Column {
+                            Text(
+                                "Address",
+                                style = AppTheme.typography.bodyMedium,
+                                color = AppTheme.colors.onBackgroundVariant
+                            )
+                            OutlinedTextField(
+                                value = address,
+                                onValueChange = {
+                                    address = it
+                                    addressError = if (it.isBlank()) "Address is required" else null
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                isError = addressError != null,
+                                supportingText = { addressError?.let { Text(it, color = Color.Red) } },
+                                maxLines = 3,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = AppTheme.colors.mainColor,
+                                    unfocusedBorderColor = Color.LightGray
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Update Button with loading state
+                Button(
+                    onClick = {
+                        scope.launch {
+                            fullNameError =
+                                if (fullName.isBlank()) "Họ tên không được để trống" else null
+                            phoneError = when {
+                                phone.isBlank() -> "Số điện thoại không được để trống"
+                                phone.length < 10 -> "Số điện thoại quá ngắn"
+                                !phone.startsWith("0") -> "Số điện thoại phải bắt đầu bằng 0"
+                                else -> null
+                            }
+                            addressError =
+                                if (address.isBlank()) "Địa chỉ không được để trống" else null
+
+                            if (fullNameError == null && phoneError == null && addressError == null) {
+                                isLoading = true
+                                try {
+                                    var finalAvatarUrl = currentAvatarUrl
+
+                                    // Chỉ upload ảnh nếu có thay đổi
+                                    if (isAvatarChanged && tempAvatarUri != null) {
+                                        isUploading = true
+                                        try {
+                                            finalAvatarUrl =
+                                                userService.uploadAvatar(context, tempAvatarUri!!)
+                                        } finally {
+                                            isUploading = false
+                                        }
+                                    }
+
+                                    userService.updateProfile(
+                                        fullName = fullName.takeIf { it.isNotEmpty() },
+                                        phone = phone.takeIf { it.isNotEmpty() },
+                                        address = address.takeIf { it.isNotEmpty() },
+                                        avatarUrl = finalAvatarUrl.takeIf { it.isNotEmpty() },
+                                        context = context
+                                    )
+
+                                    navController.popBackStack()
+                                } finally {
+                                    isLoading = false
+                                }
+                            }
+
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AppTheme.colors.mainColor,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    enabled = !isLoading && !isUploading
+                ) {
+                    if (isLoading || isUploading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            "Update Profile",
+                            style = AppTheme.typography.titleSmall
+                        )
+                    }
                 }
             }
         }

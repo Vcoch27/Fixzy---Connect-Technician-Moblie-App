@@ -46,7 +46,7 @@ fun NotificationItem(notification: Notification) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = "https://th.bing.com/th/id/OIP._Jlk8vSpJbfCNjDbqzv-DAHaF_?cb=iwc2&rs=1&pid=ImgDetMain", // Replace with actual image URL if available
+                model = "https://cdn-icons-png.flaticon.com/512/565/565422.png", // Replace with actual image URL if available
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(70.dp)

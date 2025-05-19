@@ -38,13 +38,11 @@ fun OrdersScreen(
     val tabs = listOf("Upcoming", "History", "Saved")
     val state by Store.stateFlow.collectAsState()
     val bookings = remember { mutableStateListOf<DetailBooking>() }
-
     LaunchedEffect(state.bookings) {
         bookings.clear()
         bookings.addAll(state.bookings)
     }
 
-    // Fetch bookings on initial load
     LaunchedEffect(Unit) {
         bookingService.getBookingsForUser()
     }
@@ -73,7 +71,6 @@ fun OrdersScreen(
                 OrderItemCard(
                     booking = booking,
                     onBookingUpdated = { updatedBooking ->
-                        // Cập nhật cả local state và Redux store
                         val index = bookings.indexOfFirst { it.booking_id == updatedBooking.booking_id }
                         if (index != -1) {
                             bookings[index] = updatedBooking

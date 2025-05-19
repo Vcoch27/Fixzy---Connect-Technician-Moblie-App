@@ -19,6 +19,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import android.Manifest
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Schedule
 import com.example.fixzy_ketnoikythuatvien.redux.action.Action
 import com.example.fixzy_ketnoikythuatvien.redux.store.Store
 import com.example.fixzy_ketnoikythuatvien.service.BookingService
@@ -154,21 +159,69 @@ fun ConfirmBookingScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            Text(text = "Confirm Booking", style = AppTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = "Booking Details", style = AppTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    BookingInfoItem("Service", serviceName ?: "N/A")
-                    BookingInfoItem("Date", "${date?.let { formatIsoDateToDDMMYYYY(it) }}" ?: "N/A")
-                    BookingInfoItem("Time", formatTimeHHmm(state.booking?.startTime ?: "") ?: "N/A")
-//                    BookingInfoItem("Total Price", state.booking?.totalPrice?.let { "$%.2f".format(it) } ?: "N/A")
+            Text(
+                text = "Confirm Booking",
+                style = AppTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.mainColor
+            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8FF))
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Booking Details",
+                        style = AppTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.mainColor
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Info, contentDescription = null, tint = AppTheme.colors.mainColor)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Service:", style = AppTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(serviceName ?: "N/A", fontWeight = FontWeight.Bold)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.CalendarToday, contentDescription = null, tint = AppTheme.colors.mainColor)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Date:", style = AppTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text("${date?.let { formatIsoDateToDDMMYYYY(it) } ?: "N/A"}", fontWeight = FontWeight.Bold)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Schedule, contentDescription = null, tint = AppTheme.colors.mainColor)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Time:", style = AppTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(formatTimeHHmm(state.booking?.startTime ?: "") ?: "N/A", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
-            Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text(text = "Your Information", style = AppTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8FF))
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Text(
+                        text = "Your Information",
+                        style = AppTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.mainColor
+                    )
                     OutlinedTextField(
                         value = address,
                         onValueChange = { address = it },

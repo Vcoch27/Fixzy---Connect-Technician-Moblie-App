@@ -92,7 +92,6 @@ fun LoginScreen(
             }
         )
     }
-
     val TAG = "LOGIN_SCREEN"
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -245,6 +244,10 @@ fun LoginScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
+                        //dat mau nen
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AppTheme.colors.mainColor,
+                        ),
                         enabled = !isLoading
                     ) {
                         Text("Login")

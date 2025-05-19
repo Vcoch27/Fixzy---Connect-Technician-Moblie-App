@@ -40,7 +40,7 @@ fun ProfileOptionList(
         onSuccess = null,
         onError =null
     )
-    authService.getUserData()
+//    authService.getUserData()
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
